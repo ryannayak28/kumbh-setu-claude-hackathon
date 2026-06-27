@@ -7,3 +7,7 @@ __pycache__/
 .venv/
 venv/
 .DS_Store
+
+# Debug/QA artifacts
+.playwright-mcp/
+/*.png

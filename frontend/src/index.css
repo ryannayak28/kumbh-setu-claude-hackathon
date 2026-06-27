@@ -1,4 +1,33 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+/* ============================================================
+   Setu — "Sangam" design tokens
+   Midnight-indigo command center · marigold-saffron signature ·
+   river-teal data · calm green for reunited.
+   ============================================================ */
+@theme {
+  --color-bg: #0a0e1c;          /* Godavari at night */
+  --color-surface: #121829;     /* raised panel */
+  --color-surface-2: #1a2236;   /* deeper panel */
+  --color-line: #28324f;        /* hairline */
+  --color-line-soft: #1e2740;
+
+  --color-ink: #e9edf8;         /* primary text */
+  --color-ink-dim: #8893b4;     /* muted slate-blue */
+  --color-ink-faint: #586084;
+
+  --color-saffron: #ff8a3d;     /* signature: marigold-saffron */
+  --color-saffron-deep: #e2671c;
+  --color-teal: #34c8c2;        /* river-teal: live data */
+  --color-green: #3fb984;       /* reunited / success */
+  --color-amber: #e0a82e;       /* pending */
+  --color-red: #e5484d;         /* unresolved / alert */
+
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-deva: "IBM Plex Sans Devanagari", "IBM Plex Sans", sans-serif;
+}
 
 :root {
   color-scheme: dark;
@@ -11,8 +40,63 @@ body,
   margin: 0;
 }
 
-/* Thin, dark scrollbars to match the UI. */
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgb(99 102 241 / 0.4) transparent;
+  scrollbar-color: var(--color-line) transparent;
+}
+
+/* Eyebrow / label utility — the institutional voice of the console. */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+}
+
+.mono { font-family: var(--font-mono); }
+
+.panel {
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-line);
+}
+
+/* Saffron glow for signature elements (match, bridge, primary CTA). */
+.glow-saffron { box-shadow: 0 0 0 1px var(--color-saffron), 0 0 24px -4px var(--color-saffron); }
+
+/* Leaflet dark-mode tuning so the map reads as console chrome. */
+.leaflet-container { background: var(--color-bg); font-family: var(--font-mono); }
+.leaflet-control-attribution {
+  background: rgba(10, 14, 28, 0.7) !important;
+  color: var(--color-ink-dim) !important;
+  font-size: 9px !important;
+}
+.leaflet-control-attribution a { color: var(--color-ink-dim) !important; }
+.leaflet-bar a {
+  background: var(--color-surface) !important;
+  color: var(--color-ink) !important;
+  border-color: var(--color-line) !important;
+}
+
+@keyframes pin-drop {
+  0% { transform: translateY(-18px) scale(0.6); opacity: 0; }
+  60% { transform: translateY(2px) scale(1.05); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.6); opacity: 0.85; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
 }

@@ -1,61 +1,48 @@
-// Tiny API client for the FastAPI backend. The Vite dev server proxies /api.
+// Setu API client. The Vite dev server proxies /api to the FastAPI backend.
+import type {
+  Case,
+  Geo,
+  IntakeRequest,
+  IntakeResponse,
+  MatchCandidate,
+  Stats,
+  TrackInfo,
+  FoundPerson,
+} from '@/shared/types'
 
-export type ChatMessage = { role: 'user' | 'assistant'; content: string }
-
-export type Health = {
-  status: string
-  model: string
-  model_ready: boolean
-}
-
-export async function getHealth(): Promise<Health> {
-  const res = await fetch('/api/health')
-  if (!res.ok) throw new Error(`Health check failed (${res.status})`)
+async function get<T>(url: string): Promise<T> {
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`${url} failed (${res.status})`)
   return res.json()
 }
 
-/**
- * Streams a Claude response from POST /api/chat, invoking `onToken` for each
- * text delta. Resolves when the stream ends; rejects on a server error event.
- */
-export async function streamChat(
-  messages: ChatMessage[],
-  onToken: (delta: string) => void,
-  opts: { system?: string; signal?: AbortSignal } = {},
-): Promise<void> {
-  const res = await fetch('/api/chat', {
+async function post<T>(url: string, body: unknown): Promise<T> {
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages, system: opts.system }),
-    signal: opts.signal,
+    body: JSON.stringify(body),
   })
-
-  if (!res.ok || !res.body) {
+  if (!res.ok) {
     const detail = await res.text().catch(() => '')
-    throw new Error(detail || `Request failed (${res.status})`)
+    throw new Error(detail || `${url} failed (${res.status})`)
   }
-
-  const reader = res.body.getReader()
-  const decoder = new TextDecoder()
-  let buffer = ''
-
-  for (;;) {
-    const { done, value } = await reader.read()
-    if (done) break
-    buffer += decoder.decode(value, { stream: true })
-
-    // SSE frames are separated by a blank line.
-    const frames = buffer.split('\n\n')
-    buffer = frames.pop() ?? ''
-
-    for (const frame of frames) {
-      const line = frame.trim()
-      if (!line.startsWith('data:')) continue
-      const data = line.slice(5).trim()
-      if (data === '[DONE]') return
-      const parsed = JSON.parse(data) as { delta?: string; error?: string }
-      if (parsed.error) throw new Error(parsed.error)
-      if (parsed.delta) onToken(parsed.delta)
-    }
-  }
+  return res.json()
 }
+
+export type Health = { status: string; model: string; model_ready: boolean }
+export const getHealth = () => get<Health>('/api/health')
+
+export const getGeo = () => get<Geo>('/api/geo')
+export const getStats = () => get<Stats>('/api/stats')
+export const getCases = (reveal = false) =>
+  get<{ cases: Case[] }>(`/api/cases?reveal=${reveal}`).then((r) => r.cases)
+export const getFound = () => get<{ found: FoundPerson[] }>('/api/found').then((r) => r.found)
+export const getTrack = (caseId: string) => get<TrackInfo>(`/api/track/${caseId}`)
+
+export const postIntake = (body: IntakeRequest) => post<IntakeResponse>('/api/intake', body)
+export const postMatch = (caseId: string) =>
+  post<{ caseId: string; engine: string; candidates: MatchCandidate[] }>(`/api/match/${caseId}`, {})
+export const confirmReunify = (caseId: string, foundId: string) =>
+  post<{ ok: boolean; case: Case }>('/api/reunify/confirm', { caseId, foundId })
+export const closeCase = (caseId: string) =>
+  post<{ ok: boolean; case: Case }>('/api/cases/close', { caseId })
