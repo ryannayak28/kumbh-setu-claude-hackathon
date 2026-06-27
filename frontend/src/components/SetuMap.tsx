@@ -7,6 +7,7 @@ import {
   Polyline,
   useMap,
   Tooltip,
+  ZoomControl,
 } from 'react-leaflet'
 import L from 'leaflet'
 import type { Case, Geo } from '@/shared/types'
@@ -138,6 +139,7 @@ export default function SetuMap({
         url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         attribution='&copy; OpenStreetMap &copy; CARTO'
       />
+      <ZoomControl position="bottomright" />
 
       {layers.zones &&
         geo.zones
@@ -165,8 +167,8 @@ export default function SetuMap({
           <CircleMarker
             key={s.name}
             center={[s.lat, s.lng]}
-            radius={4}
-            pathOptions={{ color: '#7aa2ff', fillColor: '#7aa2ff', fillOpacity: 0.9, weight: 1 }}
+            radius={5}
+            pathOptions={{ color: COLORS.bg, fillColor: '#849dff', fillOpacity: 1, weight: 2 }}
           >
             <Tooltip>{s.name}</Tooltip>
           </CircleMarker>
@@ -177,8 +179,8 @@ export default function SetuMap({
           <CircleMarker
             key={`${c.name}-${i}`}
             center={[c.lat, c.lng]}
-            radius={3.5}
-            pathOptions={{ color: chokepointColor(c.category), fillColor: chokepointColor(c.category), fillOpacity: 0.7, weight: 0 }}
+            radius={4}
+            pathOptions={{ color: COLORS.bg, fillColor: chokepointColor(c.category), fillOpacity: 0.9, weight: 1.5 }}
           >
             <Tooltip>
               {c.name} — {c.category}
@@ -196,12 +198,12 @@ export default function SetuMap({
             <CircleMarker
               key={c.id}
               center={ll}
-              radius={selected ? 9 : 5}
+              radius={selected ? 10 : 6}
               pathOptions={{
-                color: STATUS_COLOR[c.status],
+                color: selected ? COLORS.ink : COLORS.bg,
                 fillColor: STATUS_COLOR[c.status],
-                fillOpacity: selected ? 0.95 : 0.7,
-                weight: selected ? 3 : 1,
+                fillOpacity: 1,
+                weight: selected ? 3 : 2,
               }}
               eventHandlers={{ click: () => onSelectCase?.(c) }}
             >

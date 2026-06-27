@@ -3,17 +3,22 @@ import type { LatLngExpression } from 'leaflet'
 import type { Status } from '@/shared/types'
 
 export const COLORS = {
-  bg: '#0a0e1c',
-  surface: '#121829',
-  line: '#28324f',
-  ink: '#e9edf8',
-  inkDim: '#8893b4',
-  saffron: '#ff8a3d',
-  saffronDeep: '#e2671c',
-  teal: '#34c8c2',
-  green: '#3fb984',
-  amber: '#e0a82e',
-  red: '#e5484d',
+  bg: '#0b0b09',
+  surface: '#14130f',
+  surface2: '#1d1b15',
+  surface3: '#282419',
+  line: '#373125',
+  lineSoft: '#26231b',
+  ink: '#f7f3e8',
+  inkDim: '#beb5a2',
+  inkFaint: '#7f7564',
+  saffron: '#f08a24',
+  saffronDeep: '#c75f16',
+  teal: '#18a69a',
+  green: '#45b878',
+  amber: '#d8a72c',
+  red: '#e25f59',
+  indigo: '#8fa1ff',
 } as const
 
 export const STATUS_COLOR: Record<Status, string> = {

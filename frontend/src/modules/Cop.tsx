@@ -11,11 +11,15 @@ import {
   WifiOff,
   Bot,
   AlertCircle,
+  MapPin,
+  Clock3,
+  ExternalLink,
 } from 'lucide-react'
 import SetuMap, { type Bridge, type LayerFlags } from '@/components/SetuMap'
 import Beacon from '@/components/Beacon'
 import CandidateCard from '@/components/CandidateCard'
 import OperationsRail from '@/components/OperationsRail'
+import Brand from '@/components/Brand'
 import {
   getGeo,
   getStats,
@@ -148,24 +152,28 @@ export default function Cop() {
   const liveCount = cases.filter((c) => ['Reported', 'Pending', 'Matched', 'Unresolved'].includes(c.status)).length
 
   return (
-    <div className="flex h-full flex-col" style={{ background: COLORS.bg }}>
-      {/* Masthead */}
-      <header className="z-20 flex min-h-14 items-center justify-between border-b border-[var(--color-line)] px-3 py-2 sm:px-5" style={{ background: COLORS.bg }}>
-        <div className="flex min-w-0 items-baseline gap-2 sm:gap-3">
-          <span style={{ fontFamily: 'var(--font-deva)', color: COLORS.saffron }} className="text-2xl font-bold leading-none">
-            सेतु
-          </span>
-          <span className="hidden text-xl font-bold tracking-tight sm:inline">Setu</span>
-          <span className="eyebrow hidden sm:inline">Common Operating Picture · Simhastha Kumbh 2027</span>
+    <div className="flex h-full flex-col fine-grid" style={{ background: COLORS.bg }}>
+      <header className="surface-sheen z-20 flex min-h-[72px] items-center border-b border-[var(--color-line)]">
+        <div className="flex h-[72px] min-w-0 items-center px-3 md:w-[340px] md:shrink-0 md:border-r md:border-[var(--color-line)] md:px-5">
+          <Brand compact subtitle="Reunification operations · Kumbh 2027" />
         </div>
-        <div className="flex items-center gap-2 sm:gap-4">
-          <ServiceState health={health} />
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-2 px-3 md:px-4">
+          <div className="mr-auto hidden items-center gap-2 2xl:flex">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--color-surface-2)] text-[var(--color-teal)]">
+              <MapPin size={15} />
+            </span>
+            <span>
+              <span className="block text-xs font-semibold text-[var(--color-ink)]">Nashik operations</span>
+              <span className="mt-0.5 flex items-center gap-1 text-[10px] text-[var(--color-ink-dim)]"><Clock3 size={10} /> Live common picture</span>
+            </span>
+          </div>
           <Ticker stats={stats} live={liveCount} />
+          <ServiceState health={health} />
           <button
             type="button"
             onClick={() => setRailOpen(true)}
             aria-label="Open cases and map layers"
-            className="rounded-md border border-[var(--color-line)] p-2 text-[var(--color-ink-dim)] hover:bg-[var(--color-surface)] hover:text-[var(--color-ink)] md:hidden"
+            className="rounded-lg border border-[var(--color-line)] bg-[var(--color-surface-2)] p-2.5 text-[var(--color-ink-dim)] hover:text-[var(--color-ink)] md:hidden"
           >
             <Menu size={18} />
           </button>
@@ -173,7 +181,7 @@ export default function Cop() {
             type="button"
             onClick={() => setBeacon(true)}
             aria-label="New report"
-            className="flex min-h-9 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold text-[#1a1206] transition hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-saffron)]"
+            className="flex min-h-10 items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-extrabold text-[#1a1206] transition hover:brightness-105 active:translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-saffron)]"
             style={{ background: COLORS.saffron }}
           >
             <Plus size={16} /> <span className="hidden sm:inline">New report</span>
@@ -182,7 +190,7 @@ export default function Cop() {
       </header>
 
       <div className="relative flex flex-1 overflow-hidden">
-        <aside className="z-10 hidden w-72 shrink-0 border-r border-[var(--color-line)] md:block">
+        <aside className="z-10 hidden w-[340px] shrink-0 border-r border-[var(--color-line)] md:block">
           <OperationsRail
             geo={geo}
             stats={stats}
@@ -213,7 +221,7 @@ export default function Cop() {
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute inset-y-0 left-0 z-40 w-[min(88vw,320px)] border-r border-[var(--color-line)] md:hidden"
+                className="absolute inset-y-0 left-0 z-40 w-[min(90vw,340px)] border-r border-[var(--color-line)] md:hidden"
               >
                 <OperationsRail
                   geo={geo}
@@ -254,9 +262,34 @@ export default function Cop() {
             <LoadingMap failed={!booting} />
           )}
 
+          {geo && (
+            <>
+              <div className="pointer-events-none absolute left-4 top-4 z-[500] hidden rounded-xl border border-[var(--color-line)] bg-[rgba(20,19,15,0.94)] px-4 py-3 quiet-shadow sm:block">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-green)] opacity-40" />
+                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[var(--color-green)]" />
+                  </span>
+                  <span className="text-xs font-semibold text-[var(--color-ink)]">Live operating picture</span>
+                </div>
+                <p className="mt-1 text-[10px] font-medium text-[var(--color-ink-dim)]">{liveCount} open cases across Nashik-Trimbakeshwar</p>
+              </div>
+              <div className="pointer-events-none absolute bottom-4 left-4 z-[500] hidden items-center gap-3 rounded-lg border border-[var(--color-line)] bg-[rgba(20,19,15,0.94)] px-3 py-2 text-[10px] font-medium text-[var(--color-ink-dim)] quiet-shadow lg:flex">
+                {[
+                  ['Pending', COLORS.amber],
+                  ['Matched', COLORS.saffron],
+                  ['Unresolved', COLORS.red],
+                  ['Reunited', COLORS.green],
+                ].map(([label, color]) => (
+                  <span key={label} className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: color }} />{label}</span>
+                ))}
+              </div>
+            </>
+          )}
+
           {bridge && (
-            <div className="pointer-events-none absolute left-1/2 top-4 z-[900] -translate-x-1/2 rounded-full border px-4 py-1.5 text-xs glow-saffron" style={{ background: COLORS.bg, borderColor: COLORS.saffron, color: COLORS.saffron }}>
-              setu · the cross-center gap, closed
+            <div className="pointer-events-none absolute left-1/2 top-4 z-[900] -translate-x-1/2 rounded-lg border px-4 py-2 text-xs font-semibold glow-saffron" style={{ background: COLORS.surface, borderColor: COLORS.saffron, color: COLORS.saffron }}>
+              Cross-center link confirmed
             </div>
           )}
         </main>
@@ -268,8 +301,8 @@ export default function Cop() {
               initial={{ x: 380, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: 380, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 320, damping: 34 }}
-              className="absolute inset-0 z-20 flex h-full flex-col border-l border-[var(--color-line)] panel sm:inset-y-0 sm:left-auto sm:w-[390px]"
+              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+              className="surface-sheen absolute inset-0 z-20 flex h-full flex-col border-l border-[var(--color-line)] sm:inset-y-0 sm:left-auto sm:w-[456px]"
             >
               <Drawer
                 c={selected}
@@ -317,17 +350,20 @@ export default function Cop() {
 function Ticker({ stats, live }: { stats: Stats | null; live: number }) {
   if (!stats) return null
   const items = [
-    { l: 'live cases', v: live, c: COLORS.saffron },
-    { l: 'reunited', v: stats.reunited, c: COLORS.green },
-    { l: 'unresolved', v: stats.unresolved, c: COLORS.red },
-    { l: 'median', v: `${stats.medianHours}h`, c: COLORS.teal },
+    { l: 'Open', v: live, c: COLORS.saffron },
+    { l: 'Reunited', v: stats.reunited, c: COLORS.green },
+    { l: 'Unresolved', v: stats.unresolved, c: COLORS.red },
+    { l: 'Median', v: `${stats.medianHours}h`, c: COLORS.teal },
   ]
   return (
-    <div className="hidden items-center gap-4 lg:flex">
+    <div className="hidden items-center rounded-lg bg-[var(--color-bg)] px-1 lg:flex">
       {items.map((i) => (
-        <div key={i.l} className="text-right">
-          <div className="mono text-base font-semibold leading-none tabular-nums" style={{ color: i.c }}>{i.v}</div>
-          <div className="eyebrow">{i.l}</div>
+        <div key={i.l} className="flex items-center gap-2 border-r border-[var(--color-line-soft)] px-3 py-2 last:border-0">
+          <span className="h-2 w-2 rounded-full" style={{ background: i.c }} />
+          <span>
+            <span className="block text-xs font-bold leading-none tabular-nums text-[var(--color-ink)]">{i.v}</span>
+            <span className="mt-1 block text-[9px] font-medium text-[var(--color-ink-dim)]">{i.l}</span>
+          </span>
         </div>
       ))}
     </div>
@@ -336,16 +372,16 @@ function Ticker({ stats, live }: { stats: Stats | null; live: number }) {
 
 function ServiceState({ health }: { health: Health | null }) {
   if (!health) {
-    return <span className="hidden h-8 w-24 animate-pulse rounded-md bg-[var(--color-surface)] sm:block" aria-label="Checking service status" />
+    return <span className="hidden h-9 w-24 animate-pulse rounded-lg bg-[var(--color-surface-2)] 2xl:block" aria-label="Checking service status" />
   }
   const modelReady = health.model_ready
   return (
     <div
-      className="hidden items-center gap-2 rounded-md bg-[var(--color-surface)] px-2.5 py-1.5 sm:flex"
+      className="hidden items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-surface-2)] px-2.5 py-2 2xl:flex"
       title={modelReady ? `${health.model} is available` : 'Deterministic extraction and matching remain available without a model key'}
     >
       {modelReady ? <Bot size={14} style={{ color: COLORS.teal }} /> : <WifiOff size={14} style={{ color: COLORS.amber }} />}
-      <span className="text-[11px] font-medium text-[var(--color-ink)]">{modelReady ? 'Claude live' : 'Resilient mode'}</span>
+      <span className="text-[10px] font-semibold text-[var(--color-ink)]">{modelReady ? 'Claude live' : 'Resilient'}</span>
       <span className="h-1.5 w-1.5 rounded-full" style={{ background: modelReady ? COLORS.green : COLORS.amber }} />
     </div>
   )
@@ -398,66 +434,72 @@ function Drawer({
   const purged = !!c.pii.purgedAt
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-[var(--color-line)] px-4 py-3">
-        <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full" style={{ background: STATUS_COLOR[c.status] }} />
-          <span className="mono text-sm font-semibold">{c.id}</span>
-          <span className="rounded px-1.5 py-0.5 text-[10px] font-medium" style={{ background: 'var(--color-surface-2)', color: STATUS_COLOR[c.status] }}>{c.status}</span>
+      <div className="flex items-start justify-between border-b border-[var(--color-line)] px-5 py-4">
+        <div>
+          <span className="text-[11px] font-bold text-[var(--color-ink-dim)]">Human review required</span>
+          <div className="mt-1.5 flex items-center gap-2">
+            <span className="mono text-sm font-semibold text-[var(--color-ink)]">{c.id}</span>
+            <span className="flex items-center gap-1.5 rounded-full px-2 py-1 text-[9px] font-bold" style={{ background: `${STATUS_COLOR[c.status]}16`, color: STATUS_COLOR[c.status] }}>
+              <span className="h-1.5 w-1.5 rounded-full bg-current" /> {c.status}
+            </span>
+          </div>
         </div>
-        <button type="button" onClick={onClose} aria-label="Close case details" className="rounded-md p-1 text-[var(--color-ink-dim)] hover:bg-[var(--color-surface)] hover:text-[var(--color-ink)]"><X size={18} /></button>
+        <button type="button" onClick={onClose} aria-label="Close case details" className="rounded-lg bg-[var(--color-surface-2)] p-2 text-[var(--color-ink-dim)] hover:text-[var(--color-ink)]"><X size={18} /></button>
       </div>
 
-      <div className="flex-1 space-y-4 overflow-y-auto p-4">
-        {/* Operational fields (matchable) */}
-        <div className="grid grid-cols-2 gap-2 text-sm">
-          <Cell k="Age / gender" v={`${c.ageBand} · ${c.gender}`} />
-          <Cell k="Language" v={c.language ?? '—'} />
-          <Cell k="Last seen" v={c.lastSeenLocation || '—'} />
-          <Cell k="Reporting center" v={c.reportingCenter} />
-        </div>
+      <div className="flex-1 space-y-6 overflow-y-auto p-5">
+        <section>
+          <h3 className="mb-3 text-xs font-semibold text-[var(--color-ink)]">Report summary</h3>
+          <div className="grid grid-cols-2 overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-bg)] text-sm">
+            <Cell k="Age / gender" v={`${c.ageBand} · ${c.gender}`} />
+            <Cell k="Language" v={c.language ?? '—'} />
+            <Cell k="Last seen" v={c.lastSeenLocation || '—'} />
+            <Cell k="Reporting center" v={c.reportingCenter} />
+          </div>
+        </section>
 
-        {/* PII block — separated + masked (DPDP) */}
-        <div className="rounded-lg border border-[var(--color-line)] p-3">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="eyebrow flex items-center gap-1"><Lock size={11} /> PII · DPDP-protected</span>
+        <section className="rounded-xl border border-[var(--color-line-soft)] bg-[var(--color-surface-2)] p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="flex items-center gap-2 text-xs font-semibold text-[var(--color-ink)]"><span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--color-bg)] text-[var(--color-teal)]"><Lock size={13} /></span> Protected information</span>
             {!purged && (
-              <button type="button" onClick={onReveal} className="flex items-center gap-1 rounded px-1 py-0.5 text-[11px] text-[var(--color-ink-dim)] hover:bg-[var(--color-surface)] hover:text-[var(--color-ink)]">
+              <button type="button" onClick={onReveal} className="flex items-center gap-1.5 rounded-lg bg-[var(--color-bg)] px-2.5 py-1.5 text-[10px] font-semibold text-[var(--color-ink-dim)] hover:text-[var(--color-ink)]">
                 {reveal ? <EyeOff size={12} /> : <Eye size={12} />} {reveal ? 'mask' : 'reveal'}
               </button>
             )}
           </div>
           {purged ? (
-            <p className="mono text-xs" style={{ color: COLORS.green }}>● purged at {new Date(c.pii.purgedAt!).toLocaleTimeString()} — minimised on reunion</p>
+            <p className="text-xs font-medium" style={{ color: COLORS.green }}>Purged at {new Date(c.pii.purgedAt!).toLocaleTimeString()} · minimised on reunion</p>
           ) : (
-            <div className="mono space-y-1 text-xs text-[var(--color-ink-dim)]">
-              <div>name: <span className="text-[var(--color-ink)]">{reveal ? c.pii.name ?? '—' : mask(c.pii.name)}</span></div>
-              <div>mobile: <span className="text-[var(--color-ink)]">{reveal ? c.pii.mobile ?? '—' : mask(c.pii.mobile)}</span></div>
+            <div className="grid grid-cols-2 gap-3 text-xs text-[var(--color-ink-dim)]">
+              <div><span className="block text-[9px] font-semibold">Name</span><span className="mono mt-1 block text-[var(--color-ink)]">{reveal ? c.pii.name ?? '—' : mask(c.pii.name)}</span></div>
+              <div><span className="block text-[9px] font-semibold">Mobile</span><span className="mono mt-1 block text-[var(--color-ink)]">{reveal ? c.pii.mobile ?? '—' : mask(c.pii.mobile)}</span></div>
             </div>
           )}
-        </div>
+        </section>
 
-        {/* Geo resolution */}
-        <div className="rounded-lg border border-[var(--color-line)] p-3">
-          <span className="eyebrow">geo-resolved</span>
-          <div className="mono mt-1 space-y-0.5 text-xs text-[var(--color-ink-dim)]">
-            <div>zone <span className="text-[var(--color-ink)]">{c.geo.zone}</span></div>
-            <div>station <span className="text-[var(--color-ink)]">{c.geo.nearestStation}</span></div>
-            <div>cameras <span className="text-[var(--color-teal)]">{c.geo.nearestCctv.slice(0, 4).join(', ') || '—'}</span></div>
-            <div>chokepoints <span className="text-[var(--color-amber)]">{c.geo.nearbyChokepoints.slice(0, 2).join(', ') || '—'}</span></div>
+        <section>
+          <div className="mb-3 flex items-center gap-2">
+            <MapPin size={14} className="text-[var(--color-teal)]" />
+            <h3 className="text-xs font-semibold text-[var(--color-ink)]">Location intelligence</h3>
           </div>
-        </div>
+          <div className="space-y-2 rounded-xl border border-[var(--color-line)] bg-[var(--color-bg)] p-3.5 text-xs">
+            <GeoRow label="Zone" value={c.geo.zone} />
+            <GeoRow label="Nearest station" value={c.geo.nearestStation} />
+            <GeoRow label="Cameras" value={c.geo.nearestCctv.slice(0, 4).join(', ') || '—'} color={COLORS.teal} />
+            <GeoRow label="Chokepoints" value={c.geo.nearbyChokepoints.slice(0, 2).join(', ') || '—'} color={COLORS.amber} />
+          </div>
+        </section>
 
-        {/* Reunify */}
-        <div>
-          <div className="mb-2 flex items-center gap-2">
-            <Search size={14} style={{ color: COLORS.saffron }} />
-            <span className="eyebrow">Reunify · cross-center candidates</span>
+        <section>
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <span className="flex items-center gap-2 text-xs font-semibold text-[var(--color-ink)]"><Search size={14} style={{ color: COLORS.saffron }} /> Reunify candidates</span>
+            {candidates.length > 0 && <span className="rounded-full bg-[var(--color-surface-2)] px-2 py-1 text-[9px] font-semibold text-[var(--color-ink-dim)]">{candidates.length} reviewed</span>}
           </div>
-          {matching && <p className="text-sm text-[var(--color-ink-dim)]">Claude is searching every center…</p>}
+          {matching && <div className="space-y-2 rounded-xl bg-[var(--color-surface-2)] p-4" aria-label="Searching every center"><div className="h-2 animate-pulse rounded bg-[var(--color-line)]" /><div className="h-2 w-3/4 animate-pulse rounded bg-[var(--color-line)]" /></div>}
           {!matching && candidates.length === 0 && !reunited && (
-            <p className="text-sm text-[var(--color-ink-dim)]">No candidates above threshold.</p>
+            <div className="rounded-xl border border-[var(--color-line-soft)] bg-[var(--color-surface-2)] px-4 py-5 text-center"><p className="text-sm font-semibold text-[var(--color-ink)]">No strong candidates yet</p><p className="mt-1 text-xs text-[var(--color-ink-dim)]">Setu will keep this case in the active queue.</p></div>
           )}
-          <div className="space-y-2">
+          <div className="space-y-3">
             {candidates.map((cand) => (
               <CandidateCard
                 key={cand.foundId}
@@ -469,18 +511,17 @@ function Drawer({
               />
             ))}
           </div>
-        </div>
+        </section>
       </div>
 
-      {/* Footer actions */}
-      <div className="border-t border-[var(--color-line)] p-3">
+      <div className="border-t border-[var(--color-line)] bg-[var(--color-bg)] p-4">
         {reunited && !purged && (
-          <button type="button" onClick={onCloseCase} className="w-full rounded-lg border border-[var(--color-line)] py-2 text-sm text-[var(--color-ink)] transition hover:border-[var(--color-green)]">
+          <button type="button" onClick={onCloseCase} className="w-full rounded-lg bg-[var(--color-green)] py-2.5 text-xs font-bold text-[#07140e] transition hover:brightness-105">
             Close case · auto-purge PII
           </button>
         )}
-        <a href={`/track/${c.id}`} target="_blank" rel="noreferrer" className="mono mt-2 block text-center text-[11px] text-[var(--color-ink-dim)] hover:text-[var(--color-teal)]">
-          family track link → /track/{c.id}
+        <a href={`/track/${c.id}`} target="_blank" rel="noreferrer" className="mt-2 flex items-center justify-center gap-1.5 rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2.5 text-[10px] font-semibold text-[var(--color-ink-dim)] hover:text-[var(--color-teal)]">
+          Open family status <ExternalLink size={12} />
         </a>
       </div>
     </div>
@@ -489,9 +530,18 @@ function Drawer({
 
 function Cell({ k, v }: { k: string; v: string }) {
   return (
-    <div className="rounded-lg border border-[var(--color-line)] bg-[var(--color-bg)] px-3 py-2">
-      <div className="eyebrow">{k}</div>
-      <div className="text-[var(--color-ink)]">{v}</div>
+    <div className="min-h-[66px] border-b border-r border-[var(--color-line-soft)] px-3.5 py-3">
+      <div className="text-[9px] font-semibold text-[var(--color-ink-dim)]">{k}</div>
+      <div className="mt-1 text-xs font-medium leading-snug text-[var(--color-ink)]">{v}</div>
+    </div>
+  )
+}
+
+function GeoRow({ label, value, color }: { label: string; value: string; color?: string }) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="w-24 shrink-0 text-[10px] font-medium text-[var(--color-ink-dim)]">{label}</span>
+      <span className="min-w-0 flex-1 text-right text-[10px] font-semibold leading-relaxed text-[var(--color-ink)]" style={{ color }}>{value}</span>
     </div>
   )
 }

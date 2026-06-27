@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { Check, Clock3, Copy, MapPin, RefreshCw, ShieldCheck } from 'lucide-react'
 import { getTrack } from '@/lib/api'
 import type { TrackInfo } from '@/shared/types'
+import Brand from '@/components/Brand'
 
 type Language = 'en' | 'hi'
 
@@ -16,7 +17,7 @@ const COPY = {
     area: 'Search area',
     privacy: 'No names, phone numbers, or photos are shown on this page.',
     help: 'Need help?',
-    helpText: 'Show this case ID at any Setu help desk or police station.',
+    helpText: 'Show this case ID at any Kumbh Setu help desk or police station.',
     checking: 'Checking for updates…',
     updated: 'Updates automatically every 15 seconds',
     missing: 'We could not find that case. Check the case ID and try again.',
@@ -80,31 +81,28 @@ export default function Track() {
   }
 
   return (
-    <main className="min-h-full bg-[#f4f6f9] px-4 py-6 text-[#172033] sm:py-10">
+    <main className="min-h-full bg-[#f4f2ec] px-4 py-6 text-[#172033] sm:py-10">
       <div className="mx-auto w-full max-w-lg">
-        <header className="mb-6 flex items-center justify-between">
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-[#d85f16]" style={{ fontFamily: 'var(--font-deva)' }}>सेतु</span>
-            <span className="text-lg font-bold">Setu</span>
-          </div>
-          <div className="flex rounded-lg border border-[#d8dee9] bg-white p-1 text-xs font-medium">
+        <header className="mb-7 flex items-center justify-between">
+          <Brand inverse compact />
+          <div className="flex rounded-lg border border-[#ddd6c8] bg-white p-1 text-xs font-bold shadow-[0_2px_6px_rgba(35,31,23,0.06)]">
             <button type="button" onClick={() => setLanguage('en')} className="rounded-md px-2.5 py-1.5" style={{ background: language === 'en' ? '#172033' : 'transparent', color: language === 'en' ? 'white' : '#5c667c' }}>English</button>
             <button type="button" onClick={() => setLanguage('hi')} className="rounded-md px-2.5 py-1.5" style={{ background: language === 'hi' ? '#172033' : 'transparent', color: language === 'hi' ? 'white' : '#5c667c' }}>हिंदी</button>
           </div>
         </header>
 
         {error && (
-          <div role="alert" className="rounded-xl border border-[#efb6b8] bg-white p-5 text-center text-sm text-[#9f2429]">
+          <div role="alert" className="rounded-xl border border-[#efb6b8] bg-white p-5 text-center text-sm font-medium text-[#9f2429] shadow-[0_2px_6px_rgba(35,31,23,0.06)]">
             {error}
           </div>
         )}
 
         {info && (
-          <section className="overflow-hidden rounded-xl bg-white shadow-[0_3px_8px_rgba(29,43,72,0.08)]">
-            <div className="border-b border-[#e3e7ef] p-5 sm:p-6">
+          <section className="overflow-hidden rounded-2xl border border-[#e2dacc] bg-white shadow-[0_8px_16px_rgba(35,31,23,0.08)]">
+            <div className="border-b border-[#e8e1d4] bg-[#fbfaf7] p-5 sm:p-6">
               <div className="mb-2 flex items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-[#667085]">{text.status}</span>
-                <button type="button" onClick={copyCaseId} aria-label={text.copy} className="flex items-center gap-1.5 rounded-md bg-[#f0f3f7] px-2.5 py-1.5 font-mono text-xs text-[#44506a] hover:bg-[#e5e9f0]">
+                <span className="text-xs font-bold text-[#667085]">{text.status}</span>
+                <button type="button" onClick={copyCaseId} aria-label={text.copy} className="flex items-center gap-1.5 rounded-md bg-[#eee8dc] px-2.5 py-1.5 font-mono text-xs font-semibold text-[#44506a] hover:bg-[#e5dece]">
                   {copied ? <Check size={13} /> : <Copy size={13} />} {copied ? text.copied : info.caseId}
                 </button>
               </div>
@@ -114,7 +112,7 @@ export default function Track() {
             </div>
 
             <div className="p-5 sm:p-6">
-              <ol className="relative ml-2 space-y-6 border-l border-[#cfd6e2] pl-7">
+              <ol className="relative ml-2 space-y-6 border-l border-[#d8d0c2] pl-7">
                 {info.stages.map((stage) => {
                   const index = info.stages.indexOf(stage)
                   const current = info.stages.indexOf(info.stage)
@@ -140,7 +138,7 @@ export default function Track() {
                 })}
               </ol>
 
-              <div className="mt-7 flex items-center gap-3 rounded-lg bg-[#eef8f7] px-3 py-3 text-sm text-[#3e5362]">
+              <div className="mt-7 flex items-center gap-3 rounded-lg border border-[#cbe4df] bg-[#eef8f7] px-3 py-3 text-sm font-medium text-[#3e5362]">
                 <MapPin size={17} className="shrink-0 text-[#117c77]" />
                 <span>{text.area}: <strong className="font-semibold text-[#172033]">{info.genericLocation}</strong></span>
               </div>
@@ -151,7 +149,7 @@ export default function Track() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-3 border-t border-[#e3e7ef] bg-[#f8f9fb] px-5 py-3 text-[11px] text-[#667085] sm:px-6">
+            <div className="flex items-center justify-between gap-3 border-t border-[#e8e1d4] bg-[#fbfaf7] px-5 py-3 text-[11px] font-medium text-[#667085] sm:px-6">
               <span className="flex items-center gap-1.5">
                 {refreshing ? <RefreshCw size={12} className="animate-spin" /> : <Clock3 size={12} />}
                 {refreshing ? text.checking : text.updated}
@@ -161,7 +159,7 @@ export default function Track() {
         )}
 
         {!info && !error && (
-          <div className="rounded-xl bg-white p-8 text-center text-sm text-[#667085] shadow-[0_3px_8px_rgba(29,43,72,0.08)]">
+          <div className="rounded-xl border border-[#e2dacc] bg-white p-8 text-center text-sm text-[#667085] shadow-[0_8px_16px_rgba(35,31,23,0.08)]">
             <RefreshCw size={20} className="mx-auto mb-3 animate-spin text-[#117c77]" />
             {text.checking}
           </div>

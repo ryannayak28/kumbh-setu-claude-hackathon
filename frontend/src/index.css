@@ -1,32 +1,30 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
-/* ============================================================
-   Setu — "Sangam" design tokens
-   Midnight-indigo command center · marigold-saffron signature ·
-   river-teal data · calm green for reunited.
-   ============================================================ */
+/* Kumbh Setu - civic operations system */
 @theme {
-  --color-bg: #0a0e1c;          /* Godavari at night */
-  --color-surface: #121829;     /* raised panel */
-  --color-surface-2: #1a2236;   /* deeper panel */
-  --color-line: #28324f;        /* hairline */
-  --color-line-soft: #1e2740;
+  --color-bg: #0b0b09;
+  --color-surface: #14130f;
+  --color-surface-2: #1d1b15;
+  --color-surface-3: #282419;
+  --color-line: #373125;
+  --color-line-soft: #26231b;
 
-  --color-ink: #e9edf8;         /* primary text */
-  --color-ink-dim: #8893b4;     /* muted slate-blue */
-  --color-ink-faint: #586084;
+  --color-ink: #f7f3e8;
+  --color-ink-dim: #beb5a2;
+  --color-ink-faint: #7f7564;
 
-  --color-saffron: #ff8a3d;     /* signature: marigold-saffron */
-  --color-saffron-deep: #e2671c;
-  --color-teal: #34c8c2;        /* river-teal: live data */
-  --color-green: #3fb984;       /* reunited / success */
-  --color-amber: #e0a82e;       /* pending */
-  --color-red: #e5484d;         /* unresolved / alert */
+  --color-saffron: #f08a24;
+  --color-saffron-deep: #c75f16;
+  --color-teal: #18a69a;
+  --color-green: #45b878;
+  --color-amber: #d8a72c;
+  --color-red: #e25f59;
+  --color-indigo: #8fa1ff;
 
-  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-sans: "Manrope", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-  --font-deva: "IBM Plex Sans Devanagari", "IBM Plex Sans", sans-serif;
+  --font-deva: "Noto Sans Devanagari", "Manrope", sans-serif;
 }
 
 :root {
@@ -45,6 +43,7 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  font-feature-settings: "ss01" 1, "cv11" 1;
 }
 
 button,
@@ -72,39 +71,67 @@ input[type="checkbox"] {
   scrollbar-color: var(--color-line) transparent;
 }
 
-/* Eyebrow / label utility — the institutional voice of the console. */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
 .eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   color: var(--color-ink-dim);
 }
 
 .mono { font-family: var(--font-mono); }
 
+.surface-sheen {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0)),
+    var(--color-surface);
+}
+
 .panel {
-  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
-  backdrop-filter: blur(12px);
+  background: var(--color-surface);
   border: 1px solid var(--color-line);
 }
 
-/* Saffron glow for signature elements (match, bridge, primary CTA). */
-.glow-saffron { box-shadow: 0 0 0 1px var(--color-saffron), 0 0 24px -4px var(--color-saffron); }
+.quiet-shadow {
+  box-shadow: 0 8px 16px rgba(0,0,0,.22);
+}
+
+.glow-saffron { box-shadow: 0 0 0 1px var(--color-saffron), 0 0 22px rgba(240,138,36,.18); }
+
+.fine-grid {
+  background-image:
+    linear-gradient(rgba(247,243,232,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(247,243,232,.05) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-position: center;
+}
 
 /* Leaflet dark-mode tuning so the map reads as console chrome. */
-.leaflet-container { background: var(--color-bg); font-family: var(--font-mono); }
+.leaflet-container { background: var(--color-bg); font-family: var(--font-sans); }
+.leaflet-tile-pane { filter: saturate(0.58) brightness(0.84) contrast(1.12) sepia(.12); }
 .leaflet-control-attribution {
-  background: rgba(10, 14, 28, 0.7) !important;
+  background: rgba(8, 10, 15, 0.82) !important;
   color: var(--color-ink-dim) !important;
   font-size: 9px !important;
 }
 .leaflet-control-attribution a { color: var(--color-ink-dim) !important; }
 .leaflet-bar a {
-  background: var(--color-surface) !important;
+  background: var(--color-surface-2) !important;
   color: var(--color-ink) !important;
   border-color: var(--color-line) !important;
 }
+.leaflet-bar { border: 1px solid var(--color-line) !important; border-radius: 8px !important; overflow: hidden; }
+.leaflet-tooltip {
+  background: var(--color-surface-2) !important;
+  border: 1px solid var(--color-line) !important;
+  border-radius: 8px !important;
+  color: var(--color-ink) !important;
+  font-size: 12px !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,.24) !important;
+}
+.leaflet-tooltip::before { display: none; }
 
 @keyframes pin-drop {
   0% { transform: translateY(-18px) scale(0.6); opacity: 0; }
