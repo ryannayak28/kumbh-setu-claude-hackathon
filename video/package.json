@@ -1,0 +1,12 @@
+{
+  "name": "lost-person-pov-search",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev:web": "npm --prefix web run dev",
+    "build:web": "npm --prefix web run build",
+    "dev:api": "cd api && uvicorn app.main:app --reload --port 8000",
+    "test:api": "cd api && python -m pytest"
+  }
+}
+

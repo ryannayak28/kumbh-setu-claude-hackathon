@@ -1,0 +1,15 @@
+.DS_Store
+.env
+.venv/
+.pytest_cache/
+__pycache__/
+*.pyc
+node_modules/
+.next/
+dist/
+coverage/
+*.tsbuildinfo
+*.pt
+api/outputs/
+web/.env.local
+web/.env*.local
