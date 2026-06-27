@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reunification at Kumbh 2027 — Problem Space</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800;900&family=Archivo+Expanded:wght@700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --river:#0C1620;        /* night Godavari base */
+    --river-2:#10202C;      /* raised surface */
+    --river-3:#162C3A;      /* card */
+    --stone:#E7DFD2;        /* warm text */
+    --stone-dim:#9FB0B8;    /* muted */
+    --line:#22384A;         /* hairlines */
+    --marigold:#E9A23B;     /* people / places */
+    --kumkum:#C8453B;       /* alert / unresolved / the gap */
+    --teal:#4FD0C0;         /* the connective layer */
+    --teal-deep:#1C6B66;
+    --ok:#7FB069;
+    --maxw:1180px;
+    --r:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--river); color:var(--stone);
+    font-family:"IBM Plex Sans",system-ui,sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit}
+  ::selection{background:var(--teal);color:var(--river)}
+
+  /* ---------- type ---------- */
+  .ps-eyebrow{
+    font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.22em;
+    text-transform:uppercase; color:var(--teal); margin:0 0 1rem;
+  }
+  .ps-h1{
+    font-family:"Archivo Expanded","Archivo",sans-serif; font-weight:900;
+    font-size:clamp(2.4rem,5.6vw,4.6rem); line-height:.98; letter-spacing:-.01em;
+    margin:0; color:var(--stone);
+  }
+  .ps-h2{
+    font-family:"Archivo Expanded","Archivo",sans-serif; font-weight:800;
+    font-size:clamp(1.6rem,3.4vw,2.6rem); line-height:1.02; margin:0 0 .4rem;
+  }
+  .ps-kicker{
+    font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.2em;
+    text-transform:uppercase; color:var(--stone-dim);
+  }
+  .ps-lead{font-size:1.12rem; color:var(--stone-dim); max-width:62ch}
+  .mono{font-family:"IBM Plex Mono",monospace}
+
+  /* ---------- shell ---------- */
+  .ps-wrap{max-width:var(--maxw); margin:0 auto; padding:0 clamp(1.1rem,4vw,2.4rem)}
+  .ps-section{padding:clamp(3.4rem,8vw,6rem) 0; border-top:1px solid var(--line)}
+
+  /* ---------- nav ---------- */
+  .ps-nav{
+    position:sticky; top:0; z-index:50; backdrop-filter:blur(10px);
+    background:rgba(12,22,32,.82); border-bottom:1px solid var(--line);
+  }
+  .ps-nav-in{max-width:var(--maxw); margin:0 auto; display:flex; align-items:center;
+    gap:1rem; padding:.7rem clamp(1.1rem,4vw,2.4rem)}
+  .ps-mark{display:flex; align-items:center; gap:.55rem; font-family:"Archivo Expanded",sans-serif;
+    font-weight:900; letter-spacing:.02em; font-size:.98rem}
+  .ps-mark b{color:var(--teal)}
+  .ps-mark svg{flex:none}
+  .ps-nav-links{margin-left:auto; display:flex; gap:1.3rem; align-items:center}
+  .ps-nav-links a{font-family:"IBM Plex Mono",monospace; font-size:.74rem; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--stone-dim); text-decoration:none}
+  .ps-nav-links a:hover{color:var(--stone)}
+  .ps-counter{font-family:"IBM Plex Mono",monospace; font-size:.74rem; color:var(--river);
+    background:var(--teal); padding:.34rem .6rem; border-radius:999px; font-weight:600;
+    white-space:nowrap}
+  @media (max-width:760px){ .ps-nav-links a{display:none} }
+
+  /* ---------- hero ---------- */
+  .ps-hero{display:grid; grid-template-columns:1.05fr .95fr; gap:clamp(1.5rem,4vw,3rem);
+    align-items:center; padding-top:clamp(2.6rem,6vw,4.5rem); padding-bottom:clamp(2.6rem,6vw,4rem)}
+  @media (max-width:880px){ .ps-hero{grid-template-columns:1fr} }
+  .ps-h1 .warm{color:var(--marigold)}
+  .ps-hero p.ps-lead{margin:1.4rem 0 0}
+  .ps-scalestrip{display:flex; flex-wrap:wrap; gap:1.6rem; margin-top:2rem;
+    padding-top:1.6rem; border-top:1px solid var(--line)}
+  .ps-scale b{display:block; font-family:"Archivo",sans-serif; font-weight:800;
+    font-size:1.65rem; line-height:1; color:var(--stone)}
+  .ps-scale b.gap{color:var(--kumkum)}
+  .ps-scale span{font-family:"IBM Plex Mono",monospace; font-size:.68rem; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--stone-dim)}
+  .ps-mapwrap{position:relative}
+  .ps-map{width:100%; height:auto; display:block; border:1px solid var(--line);
+    border-radius:var(--r); background:
+      radial-gradient(120% 90% at 70% 10%, rgba(79,208,192,.06), transparent 55%),
+      linear-gradient(180deg,#0b1a24,#0a141c)}
+  .ps-maplabel{position:absolute; bottom:.7rem; left:.85rem; font-family:"IBM Plex Mono",monospace;
+    font-size:.64rem; letter-spacing:.06em; color:var(--stone-dim)}
+
+  /* ---------- the gap (signature) ---------- */
+  .ps-gap-grid{display:grid; grid-template-columns:1fr 1.15fr; gap:clamp(1.5rem,4vw,3rem); align-items:center}
+  @media (max-width:880px){ .ps-gap-grid{grid-template-columns:1fr} }
+  .ps-gapstage{position:relative; border:1px solid var(--line); border-radius:var(--r);
+    padding:1.4rem; background:var(--river-2)}
+  .ps-toggle{display:inline-flex; gap:.4rem; margin-top:1.2rem; background:var(--river-3);
+    border:1px solid var(--line); border-radius:999px; padding:.3rem}
+  .ps-toggle button{font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.06em;
+    border:0; background:transparent; color:var(--stone-dim); padding:.45rem .9rem; border-radius:999px;
+    cursor:pointer; text-transform:uppercase}
+  .ps-toggle button[aria-pressed="true"]{background:var(--teal); color:var(--river); font-weight:600}
+  .ps-link-broken{stroke-dasharray:5 7; animation:dash 1s linear infinite}
+  @keyframes dash{to{stroke-dashoffset:-24}}
+
+  /* ---------- data reality ---------- */
+  .ps-grid{display:grid; grid-template-columns:repeat(12,1fr); gap:1rem}
+  .ps-card{background:var(--river-2); border:1px solid var(--line); border-radius:var(--r);
+    padding:1.3rem 1.4rem}
+  .ps-card h3{margin:.1rem 0 .8rem; font-family:"Archivo",sans-serif; font-weight:700; font-size:1rem}
+  .ps-stat{font-family:"Archivo Expanded","Archivo",sans-serif; font-weight:900;
+    font-size:clamp(2rem,4vw,2.9rem); line-height:1; color:var(--marigold)}
+  .ps-stat small{font-size:.9rem; color:var(--stone-dim); font-family:"IBM Plex Mono",monospace;
+    font-weight:400; display:block; margin-top:.5rem; letter-spacing:.03em}
+  .col4{grid-column:span 4} .col6{grid-column:span 6} .col8{grid-column:span 8}
+  .col12{grid-column:span 12}
+  @media (max-width:760px){ .col4,.col6,.col8{grid-column:span 12} }
+
+  /* age bars */
+  .ps-bar{display:grid; grid-template-columns:64px 1fr 46px; align-items:center; gap:.7rem; margin:.42rem 0}
+  .ps-bar .lab{font-family:"IBM Plex Mono",monospace; font-size:.72rem; color:var(--stone-dim)}
+  .ps-bar .track{height:14px; background:var(--river-3); border-radius:4px; overflow:hidden}
+  .ps-bar .fill{height:100%; background:var(--teal-deep); border-radius:4px;
+    transform-origin:left; transform:scaleX(0); transition:transform 1s cubic-bezier(.2,.8,.2,1)}
+  .ps-bar.hot .fill{background:var(--marigold)}
+  .ps-bar .val{font-family:"IBM Plex Mono",monospace; font-size:.72rem; color:var(--stone); text-align:right}
+
+  .ps-spark{width:100%; height:90px; display:block}
+
+  /* ---------- wedge ---------- */
+  .ps-wedge-grid{display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1.6rem}
+  @media (max-width:760px){ .ps-wedge-grid{grid-template-columns:1fr} }
+  .ps-rec{display:flex; gap:.8rem; align-items:flex-start; padding:1rem 1.1rem;
+    background:var(--river-2); border:1px solid var(--line); border-radius:12px}
+  .ps-rec .n{font-family:"IBM Plex Mono",monospace; color:var(--teal); font-size:.8rem; flex:none; padding-top:.1rem}
+
+  /* ---------- angles ---------- */
+  .ps-angles{display:grid; grid-template-columns:repeat(3,1fr); gap:1rem}
+  @media (max-width:980px){ .ps-angles{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:620px){ .ps-angles{grid-template-columns:1fr} }
+  .ps-angle{position:relative; text-align:left; cursor:pointer; background:var(--river-2);
+    border:1px solid var(--line); border-radius:var(--r); padding:1.3rem 1.3rem 1.5rem;
+    color:inherit; font:inherit; transition:border-color .18s, transform .18s, background .18s}
+  .ps-angle:hover{transform:translateY(-3px); border-color:var(--teal-deep)}
+  .ps-angle[aria-pressed="true"]{border-color:var(--teal); background:linear-gradient(180deg,rgba(79,208,192,.10),rgba(79,208,192,.02))}
+  .ps-angle:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+  .ps-angle .tick{position:absolute; top:1rem; right:1rem; width:24px; height:24px; border-radius:7px;
+    border:1.5px solid var(--line); display:grid; place-items:center; color:var(--river); transition:.18s}
+  .ps-angle[aria-pressed="true"] .tick{background:var(--teal); border-color:var(--teal)}
+  .ps-angle .tick svg{opacity:0; transition:.18s}
+  .ps-angle[aria-pressed="true"] .tick svg{opacity:1}
+  .ps-angle .role{font-family:"IBM Plex Mono",monospace; font-size:.66rem; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--marigold)}
+  .ps-angle h3{font-family:"Archivo",sans-serif; font-weight:800; font-size:1.18rem; margin:.5rem 0 .5rem}
+  .ps-angle p{margin:0 0 1rem; font-size:.92rem; color:var(--stone-dim)}
+  .ps-tags{display:flex; flex-wrap:wrap; gap:.35rem}
+  .ps-tag{font-family:"IBM Plex Mono",monospace; font-size:.6rem; letter-spacing:.05em;
+    text-transform:uppercase; padding:.26rem .5rem; border-radius:999px;
+    border:1px solid var(--line); color:var(--stone-dim)}
+
+  /* judging map */
+  .ps-judge{display:grid; grid-template-columns:repeat(5,1fr); gap:.8rem; margin-top:1.6rem}
+  @media (max-width:760px){ .ps-judge{grid-template-columns:1fr 1fr} }
+  .ps-crit{border:1px solid var(--line); border-radius:12px; padding:1rem; background:var(--river-2);
+    transition:.25s}
+  .ps-crit.lit{border-color:var(--teal); background:linear-gradient(180deg,rgba(79,208,192,.12),transparent)}
+  .ps-crit .dot{width:9px; height:9px; border-radius:50%; background:var(--line); display:inline-block;
+    margin-right:.5rem; transition:.25s}
+  .ps-crit.lit .dot{background:var(--teal); box-shadow:0 0 10px var(--teal)}
+  .ps-crit h4{margin:.2rem 0 .35rem; font-family:"Archivo",sans-serif; font-size:.95rem}
+  .ps-crit p{margin:0; font-size:.78rem; color:var(--stone-dim)}
+  .ps-crit .cov{font-family:"IBM Plex Mono",monospace; font-size:.66rem; color:var(--teal); margin-top:.6rem; display:block}
+
+  .ps-summary{margin-top:1.8rem; padding:1.2rem 1.4rem; border:1px dashed var(--teal-deep);
+    border-radius:var(--r); background:rgba(79,208,192,.05); font-size:.95rem}
+  .ps-summary b{color:var(--teal)}
+
+  footer{padding:2.5rem 0 3.5rem; color:var(--stone-dim); font-size:.8rem}
+  footer .mono{color:var(--stone-dim)}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important; transition:none!important; scroll-behavior:auto!important}
+    .ps-bar .fill{transform:scaleX(1)!important}
+  }
+</style>
+</head>
+<body>
+
+<nav class="ps-nav">
+  <div class="ps-nav-in">
+    <span class="ps-mark" aria-label="Setu — the connecting layer">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+        <circle cx="4" cy="15" r="3" stroke="#E9A23B" stroke-width="1.6"/>
+        <circle cx="18" cy="15" r="3" stroke="#C8453B" stroke-width="1.6"/>
+        <path d="M4 12C4 6 18 6 18 12" stroke="#4FD0C0" stroke-width="1.6"/>
+      </svg>
+      KUMBH&nbsp;<b>SETU</b>
+    </span>
+    <div class="ps-nav-links">
+      <a href="#gap">The gap</a>
+      <a href="#data">Data reality</a>
+      <a href="#wedge">The wedge</a>
+      <a href="#angles">Choose angles</a>
+    </div>
+    <span class="ps-counter" id="counter">0 angles chosen</span>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="ps-wrap ps-hero">
+  <div>
+    <p class="ps-eyebrow">Nashik–Trimbakeshwar Simhastha · 2027</p>
+    <h1 class="ps-h1">80 million arrive.<br><span class="warm">Thousands vanish</span><br>into the crowd each day.</h1>
+    <p class="ps-lead">Most are elderly pilgrims, separated from family in a sea of strangers. Ten lost-and-found centers each keep their own list — and <strong>none can see the others'</strong>. A person found at one center stays invisible to a family searching at the next.</p>
+    <div class="ps-scalestrip">
+      <div class="ps-scale"><b>80M</b><span>Pilgrims</span></div>
+      <div class="ps-scale"><b>2,500</b><span>Reports (synthetic)</span></div>
+      <div class="ps-scale"><b>10</b><span>Centers</span></div>
+      <div class="ps-scale"><b class="gap">0</b><span>Shared search</span></div>
+    </div>
+  </div>
+
+  <div class="ps-mapwrap">
+    <svg class="ps-map" viewBox="0 0 560 520" role="img" aria-label="Schematic of the mela grounds: the Godavari, crowd zones, separation hotspots and lost-and-found centers.">
+      <!-- river -->
+      <path d="M-20 120 C 140 180, 200 300, 360 330 S 600 470, 600 470" stroke="#1C3A4A" stroke-width="46" fill="none" stroke-linecap="round" opacity=".55"/>
+      <path d="M-20 120 C 140 180, 200 300, 360 330 S 600 470, 600 470" stroke="#2B5A6B" stroke-width="2" fill="none" opacity=".7"/>
+      <text x="40" y="150" fill="#5C7A86" font-family="IBM Plex Mono" font-size="11" opacity=".8">GODAVARI</text>
+
+      <!-- crowd dots (zones) -->
+      <g id="crowd"></g>
+
+      <!-- hotspots (chokepoints) -->
+      <g id="hotspots"></g>
+
+      <!-- center nodes A and B -->
+      <g>
+        <circle cx="120" cy="250" r="9" fill="#E9A23B"/>
+        <circle cx="120" cy="250" r="16" fill="none" stroke="#E9A23B" stroke-opacity=".4"/>
+        <text x="120" y="232" fill="#E7DFD2" font-family="IBM Plex Mono" font-size="11" text-anchor="middle">Center A</text>
+
+        <circle cx="430" cy="180" r="9" fill="#C8453B"/>
+        <circle cx="430" cy="180" r="16" fill="none" stroke="#C8453B" stroke-opacity=".4"/>
+        <text x="430" y="162" fill="#E7DFD2" font-family="IBM Plex Mono" font-size="11" text-anchor="middle">Center B</text>
+
+        <!-- the missing connection -->
+        <path d="M129 250 C 250 230, 320 200, 421 182" stroke="#C8453B" stroke-width="1.6" fill="none" class="ps-link-broken" opacity=".75"/>
+      </g>
+    </svg>
+    <span class="ps-maplabel mono">1,280 cameras · 85 chokepoints · 32 zones · 14 stations — already mapped</span>
+  </div>
+</header>
+
+<!-- ============ THE GAP (signature) ============ -->
+<section class="ps-section" id="gap">
+  <div class="ps-wrap ps-gap-grid">
+    <div>
+      <p class="ps-kicker">The failure, in one picture</p>
+      <h2 class="ps-h2">A found person and a searching family, in the same city, who never meet.</h2>
+      <p class="ps-lead">Center A registers a confused elderly man with no phone. Two kilometres away, Center B takes a frantic daughter's report. Both records exist. Neither system can read the other. The match that would reunite them in minutes instead takes hours — or never happens.</p>
+      <div class="ps-toggle" role="group" aria-label="Toggle the connecting layer">
+        <button id="btn-today" aria-pressed="true">Today</button>
+        <button id="btn-setu" aria-pressed="false">With a shared layer</button>
+      </div>
+      <p class="mono" id="gap-caption" style="margin-top:1rem;color:var(--stone-dim);font-size:.82rem">Today: each center is an island. Search stops at the door.</p>
+    </div>
+    <div class="ps-gapstage">
+      <svg viewBox="0 0 520 320" role="img" aria-label="Diagram: two centers and one missing person, with and without a connecting layer." style="width:100%;height:auto">
+        <!-- found person -->
+        <g>
+          <circle cx="90" cy="90" r="22" fill="none" stroke="#E9A23B" stroke-width="2"/>
+          <circle cx="90" cy="83" r="7" fill="#E9A23B"/>
+          <path d="M78 102 a12 10 0 0 1 24 0" fill="#E9A23B"/>
+          <text x="90" y="140" fill="#E7DFD2" font-family="IBM Plex Sans" font-size="12" text-anchor="middle">Found at Center A</text>
+          <text x="90" y="158" fill="#9FB0B8" font-family="IBM Plex Mono" font-size="10" text-anchor="middle">no name · no phone</text>
+        </g>
+        <!-- searching family -->
+        <g>
+          <circle cx="430" cy="230" r="22" fill="none" stroke="#C8453B" stroke-width="2"/>
+          <circle cx="430" cy="223" r="7" fill="#C8453B"/>
+          <path d="M418 242 a12 10 0 0 1 24 0" fill="#C8453B"/>
+          <text x="430" y="280" fill="#E7DFD2" font-family="IBM Plex Sans" font-size="12" text-anchor="middle">Searching at Center B</text>
+          <text x="430" y="298" fill="#9FB0B8" font-family="IBM Plex Mono" font-size="10" text-anchor="middle">"father, ~75, Maithili"</text>
+        </g>
+        <!-- the layer link -->
+        <path id="setu-link" d="M112 90 C 250 90, 270 230, 408 230"
+              stroke="#4FD0C0" stroke-width="2.5" fill="none"
+              stroke-dasharray="420" stroke-dashoffset="420" opacity="0"/>
+        <text id="setu-badge" x="260" y="150" fill="#4FD0C0" font-family="IBM Plex Mono" font-size="11" text-anchor="middle" opacity="0">match · 94% · 6 min</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DATA REALITY ============ -->
+<section class="ps-section" id="data">
+  <div class="ps-wrap">
+    <p class="ps-kicker">What the 2,500 records actually say</p>
+    <h2 class="ps-h2">Design for who is lost, and for how little you'll know about them.</h2>
+    <p class="ps-lead" style="margin-bottom:2rem">These are the constraints, straight from the data — not assumptions.</p>
+
+    <div class="ps-grid">
+      <div class="ps-card col4">
+        <h3>Speed is not the problem — the long tail is</h3>
+        <svg class="ps-spark" viewBox="0 0 300 90" aria-hidden="true">
+          <path d="M0 80 C 20 10, 40 18, 70 40 S 130 76, 180 80 S 280 82, 300 82" fill="none" stroke="#4FD0C0" stroke-width="2"/>
+          <path d="M0 80 C 20 10, 40 18, 70 40 S 130 76, 180 80 S 280 82, 300 82 L300 90 L0 90 Z" fill="#4FD0C0" opacity=".08"/>
+          <line x1="38" y1="0" x2="38" y2="90" stroke="#E9A23B" stroke-width="1" stroke-dasharray="3 3"/>
+        </svg>
+        <p class="mono" style="font-size:.74rem;color:var(--stone-dim);margin:.2rem 0 0">median <b style="color:var(--marigold)">2.7h</b> · but tail runs to <b style="color:var(--kumkum)">29h</b>. The slow cases are where people suffer.</p>
+      </div>
+
+      <div class="ps-card col4">
+        <h3>Half are elderly</h3>
+        <div class="ps-bar"><span class="lab">0–12</span><div class="track"><div class="fill" data-w="29"></div></div><span class="val">201</span></div>
+        <div class="ps-bar"><span class="lab">18–40</span><div class="track"><div class="fill" data-w="36"></div></div><span class="val">252</span></div>
+        <div class="ps-bar"><span class="lab">41–60</span><div class="track"><div class="fill" data-w="73"></div></div><span class="val">506</span></div>
+        <div class="ps-bar hot"><span class="lab">61–70</span><div class="track"><div class="fill" data-w="100"></div></div><span class="val">697</span></div>
+        <div class="ps-bar hot"><span class="lab">71–80</span><div class="track"><div class="fill" data-w="76"></div></div><span class="val">532</span></div>
+        <div class="ps-bar hot"><span class="lab">80+</span><div class="track"><div class="fill" data-w="32"></div></div><span class="val">225</span></div>
+        <p class="mono" style="font-size:.72rem;color:var(--stone-dim);margin:.7rem 0 0">≈49% are 61+ — rural, often phoneless.</p>
+      </div>
+
+      <div class="ps-card col4">
+        <h3>You'll rarely have a clean key</h3>
+        <div style="display:flex;gap:1.4rem;flex-wrap:wrap;margin-top:.3rem">
+          <div><div class="ps-stat">15%</div><div class="mono" style="font-size:.7rem;color:var(--stone-dim);margin-top:.4rem">no name</div></div>
+          <div><div class="ps-stat">20%</div><div class="mono" style="font-size:.7rem;color:var(--stone-dim);margin-top:.4rem">no mobile</div></div>
+        </div>
+        <p class="mono" style="font-size:.72rem;color:var(--stone-dim);margin:1rem 0 0">Descriptions are vague and often contradict other fields. No single field can be the join key.</p>
+      </div>
+
+      <div class="ps-card col4">
+        <div class="ps-stat" style="color:var(--kumkum)">8.4%</div>
+        <p class="mono" style="font-size:.78rem;color:var(--stone-dim);margin:.7rem 0 0">are the <b style="color:var(--stone)">same person reported at multiple centers</b> — the cross-center duplicate. This <em>is</em> the matching problem, sitting in the data.</p>
+      </div>
+      <div class="ps-card col4">
+        <div class="ps-stat">10 / 20</div>
+        <p class="mono" style="font-size:.78rem;color:var(--stone-dim);margin:.7rem 0 0"><b style="color:var(--stone)">10 languages</b>, <b style="color:var(--stone)">20 states</b> of origin. "Savita" and "Savitha", Maithili vs Hindi spellings — matching must cross scripts and transliterations.</p>
+      </div>
+      <div class="ps-card col4">
+        <div class="ps-stat" style="color:var(--ok)">86%</div>
+        <p class="mono" style="font-size:.78rem;color:var(--stone-dim);margin:.7rem 0 0">reunited overall — so the goal isn't to invent reunification, it's to <b style="color:var(--stone)">shrink the unresolved tail</b> and the time-to-match.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE WEDGE ============ -->
+<section class="ps-section" id="wedge">
+  <div class="ps-wrap">
+    <p class="ps-kicker">The one hard problem worth owning</p>
+    <h2 class="ps-h2">Underneath every angle is the same task: entity resolution.</h2>
+    <p class="ps-lead">Matching sparse, multilingual, partial records of the same human across ten unconnected lists. Exact-match SQL breaks on every quirk above. Fuzzy reasoning over names, languages, places, age and description is exactly what an LLM does well — and it's defensible: you're not replacing the centers, you're the <b style="color:var(--teal)">layer that makes their records mutually visible</b>.</p>
+    <div class="ps-wedge-grid">
+      <div class="ps-rec"><span class="n">01</span><div><b>Collapse duplicates.</b> New report arrives → is this someone already reported elsewhere? Kill the 8% noise before it wastes searcher time.</div></div>
+      <div class="ps-rec"><span class="n">02</span><div><b>Match found ↔ missing.</b> A person picked up at a center/hospital → rank the open reports they could be, across all centers.</div></div>
+      <div class="ps-rec"><span class="n">03</span><div><b>Build on what exists.</b> 1,280 cameras, 85 chokepoints, 14 stations, 32 zones are already mapped. Use the geography; don't rebuild it.</div></div>
+      <div class="ps-rec"><span class="n">04</span><div><b>Degrade gracefully.</b> Networks die on snan days. The layer must work offline and through a human operator for phoneless pilgrims.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CHOOSE ANGLES ============ -->
+<section class="ps-section" id="angles">
+  <div class="ps-wrap">
+    <p class="ps-kicker">Your move</p>
+    <h2 class="ps-h2">Choose the angles you'll build.</h2>
+    <p class="ps-lead" style="margin-bottom:2rem">Tap any card to select it. The judging criteria below light up to show what your chosen scope already covers — and where you're exposed.</p>
+
+    <div class="ps-angles" id="angle-grid">
+      <!-- cards injected by JS for consistency of tick markup -->
+    </div>
+
+    <p class="ps-kicker" style="margin-top:2.6rem">Coverage against judging criteria</p>
+    <div class="ps-judge" id="judge"></div>
+
+    <div class="ps-summary" id="summary">Nothing chosen yet. A strong hackathon scope is usually <b>one hero angle built end-to-end</b> plus one or two supporting it — not all six half-built.</div>
+  </div>
+</section>
+
+<footer class="ps-wrap">
+  <p class="mono">India's First Claude Impact Lab · 27 June 2026 · RIIDL, Somaiya Vidyavihar University, Mumbai</p>
+  <p class="mono">Data: Kumbhathon Innovation Foundation (locations) · synthetic missing-person records (no real PII). Figures computed from the provided 2,500-record dataset.</p>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ----- scatter crowd + hotspots on hero map ----- */
+  var ns="http://www.w3.org/2000/svg";
+  var crowd=document.getElementById("crowd");
+  if(crowd){
+    var seed=42, rnd=function(){ seed=(seed*9301+49297)%233280; return seed/233280; };
+    for(var i=0;i<70;i++){
+      var c=document.createElementNS(ns,"circle");
+      c.setAttribute("cx", 30+rnd()*500);
+      c.setAttribute("cy", 30+rnd()*460);
+      c.setAttribute("r", 1.4+rnd()*1.8);
+      c.setAttribute("fill","#3a5663");
+      c.setAttribute("opacity", (0.4+rnd()*0.5).toFixed(2));
+      crowd.appendChild(c);
+    }
+    var hs=document.getElementById("hotspots");
+    var pts=[[200,300],[340,340],[300,210],[250,400],[400,300]];
+    pts.forEach(function(p,idx){
+      var g=document.createElementNS(ns,"circle");
+      g.setAttribute("cx",p[0]); g.setAttribute("cy",p[1]); g.setAttribute("r",4);
+      g.setAttribute("fill","#C8453B");
+      var pulse=document.createElementNS(ns,"circle");
+      pulse.setAttribute("cx",p[0]); pulse.setAttribute("cy",p[1]); pulse.setAttribute("r",4);
+      pulse.setAttribute("fill","none"); pulse.setAttribute("stroke","#C8453B");
+      var a=document.createElementNS(ns,"animate");
+      a.setAttribute("attributeName","r"); a.setAttribute("values","4;16"); a.setAttribute("dur","2.4s");
+      a.setAttribute("begin",(idx*0.4)+"s"); a.setAttribute("repeatCount","indefinite");
+      var o=document.createElementNS(ns,"animate");
+      o.setAttribute("attributeName","opacity"); o.setAttribute("values","0.7;0"); o.setAttribute("dur","2.4s");
+      o.setAttribute("begin",(idx*0.4)+"s"); o.setAttribute("repeatCount","indefinite");
+      pulse.appendChild(a); pulse.appendChild(o);
+      hs.appendChild(pulse); hs.appendChild(g);
+    });
+  }
+
+  /* ----- animate bars when in view ----- */
+  var fills=document.querySelectorAll(".ps-bar .fill");
+  if("IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){
+        e.target.style.transform="scaleX("+(e.target.dataset.w/100)+")";
+        io.unobserve(e.target);
+      }});
+    },{threshold:.4});
+    fills.forEach(function(f){ io.observe(f); });
+  } else { fills.forEach(function(f){ f.style.transform="scaleX("+(f.dataset.w/100)+")"; }); }
+
+  /* ----- the gap toggle ----- */
+  var bToday=document.getElementById("btn-today"),
+      bSetu=document.getElementById("btn-setu"),
+      link=document.getElementById("setu-link"),
+      badge=document.getElementById("setu-badge"),
+      cap=document.getElementById("gap-caption");
+  function setMode(on){
+    bSetu.setAttribute("aria-pressed",on);
+    bToday.setAttribute("aria-pressed",!on);
+    if(link){
+      link.style.transition="stroke-dashoffset 1.1s ease, opacity .3s";
+      link.style.opacity=on?"1":"0";
+      link.style.strokeDashoffset=on?"0":"420";
+      badge.style.transition="opacity .5s .6s";
+      badge.style.opacity=on?"1":"0";
+    }
+    cap.innerHTML=on
+      ? "With a shared layer: the same record surfaces a ranked match across centers in minutes."
+      : "Today: each center is an island. Search stops at the door.";
+  }
+  bToday.addEventListener("click",function(){setMode(false);});
+  bSetu.addEventListener("click",function(){setMode(true);});
+
+  /* ----- angles + judging map ----- */
+  var CRIT={
+    deploy:{name:"Deployability",desc:"Could this run at 80M scale?"},
+    fit:{name:"Real-world fit",desc:"Solves a real failure?"},
+    ux:{name:"UX",desc:"Phoneless, non-literate users?"},
+    sys:{name:"System design",desc:"Offline, dupes, incomplete data?"},
+    data:{name:"Responsible data",desc:"Privacy by design?"}
+  };
+  var ANGLES=[
+    {id:"reunify",role:"Hero candidate",t:"Reunify — the matching engine",
+     d:"Cross-center entity resolution. Collapse duplicates, rank found↔missing matches over sparse multilingual records. The defensible technical core.",
+     c:["fit","sys","deploy"]},
+    {id:"beacon",role:"Proactive",t:"Beacon — fast intake & alerts",
+     d:"Self-reported and operator-filed lost reports that fire instantly into the shared layer and ping nearby centers, cameras and stations.",
+     c:["fit","ux"]},
+    {id:"seeker",role:"Transparency",t:"Seeker self-service",
+     d:"A 'where is my case' view so families track status without queuing — kiosk and assisted, not smartphone-only.",
+     c:["ux","fit","data"]},
+    {id:"geo",role:"Predictive",t:"Geospatial hotspot layer",
+     d:"Use the 85 chokepoints + 32 zones to predict where separations cluster and pre-place help points and operators. Proactive, not reactive.",
+     c:["deploy","fit"]},
+    {id:"offline",role:"Resilience",t:"Offline-first & phoneless UX",
+     d:"Human-operated kiosks, voice/photo intake, sync-when-back. Works when the network dies on snan days and the pilgrim has no phone.",
+     c:["sys","ux","deploy"]},
+    {id:"privacy",role:"Trust",t:"DPDP / privacy by design",
+     d:"Consent at intake, minimal retention, purpose-bound access, auto-purge after reunification. Makes the whole system deployable by the state.",
+     c:["data","sys"]}
+  ];
+
+  var chosen={};
+  var grid=document.getElementById("angle-grid");
+  var tickSVG='<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 7l3 3 6-7" stroke="#0C1620" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  ANGLES.forEach(function(a){
+    var b=document.createElement("button");
+    b.className="ps-angle"; b.setAttribute("aria-pressed","false"); b.dataset.id=a.id;
+    b.innerHTML=
+      '<span class="tick">'+tickSVG+'</span>'+
+      '<span class="role">'+a.role+'</span>'+
+      '<h3>'+a.t+'</h3>'+
+      '<p>'+a.d+'</p>'+
+      '<div class="ps-tags">'+a.c.map(function(k){return '<span class="ps-tag">'+CRIT[k].name+'</span>';}).join('')+'</div>';
+    b.addEventListener("click",function(){
+      chosen[a.id]=!chosen[a.id];
+      b.setAttribute("aria-pressed",chosen[a.id]?"true":"false");
+      render();
+    });
+    grid.appendChild(b);
+  });
+
+  var judge=document.getElementById("judge");
+  Object.keys(CRIT).forEach(function(k){
+    var d=document.createElement("div");
+    d.className="ps-crit"; d.dataset.k=k;
+    d.innerHTML='<span class="dot"></span><h4>'+CRIT[k].name+'</h4><p>'+CRIT[k].desc+'</p><span class="cov"></span>';
+    judge.appendChild(d);
+  });
+
+  var counter=document.getElementById("counter");
+  var summary=document.getElementById("summary");
+
+  function render(){
+    var sel=ANGLES.filter(function(a){return chosen[a.id];});
+    counter.textContent=sel.length+" angle"+(sel.length===1?"":"s")+" chosen";
+
+    var cov={}; Object.keys(CRIT).forEach(function(k){cov[k]=0;});
+    sel.forEach(function(a){ a.c.forEach(function(k){cov[k]++;}); });
+
+    Object.keys(CRIT).forEach(function(k){
+      var el=judge.querySelector('[data-k="'+k+'"]');
+      el.classList.toggle("lit",cov[k]>0);
+      el.querySelector(".cov").textContent=cov[k]>0?("✓ covered by "+cov[k]):"— exposed";
+    });
+
+    var covered=Object.keys(CRIT).filter(function(k){return cov[k]>0;}).length;
+    var gaps=Object.keys(CRIT).filter(function(k){return cov[k]===0;}).map(function(k){return CRIT[k].name;});
+    if(sel.length===0){
+      summary.innerHTML="Nothing chosen yet. A strong hackathon scope is usually <b>one hero angle built end-to-end</b> plus one or two supporting it — not all six half-built.";
+    } else {
+      var msg="<b>"+sel.length+" angle"+(sel.length===1?"":"s")+"</b> selected, covering <b>"+covered+"/5</b> judging criteria.";
+      if(gaps.length) msg+=" Still exposed on: <b>"+gaps.join(", ")+"</b>.";
+      else msg+=" All five criteria touched — now make sure one is built deeply enough to demo live.";
+      summary.innerHTML=msg;
+    }
+  }
+  render();
+})();
+</script>
+</body>
+</html>
