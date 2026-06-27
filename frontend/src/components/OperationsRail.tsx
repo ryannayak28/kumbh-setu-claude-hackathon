@@ -203,7 +203,7 @@ export default function OperationsRail({
           )}
         </>
       ) : (
-        <div className="flex-1 bg-[var(--color-bg)]/35 p-4">
+        <div className="min-h-0 flex-1 overflow-y-auto bg-[var(--color-bg)]/35 p-4 pb-6">
           <p className="mb-4 text-xs font-medium leading-relaxed text-[var(--color-ink-dim)]">
             Toggle the infrastructure context behind every report.
           </p>

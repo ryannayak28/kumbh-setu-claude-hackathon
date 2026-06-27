@@ -14,12 +14,14 @@ import {
   MapPin,
   Clock3,
   ExternalLink,
+  Camera,
 } from 'lucide-react'
 import SetuMap, { type Bridge, type LayerFlags } from '@/components/SetuMap'
 import Beacon from '@/components/Beacon'
 import CandidateCard from '@/components/CandidateCard'
 import OperationsRail from '@/components/OperationsRail'
 import Brand from '@/components/Brand'
+import VideoSweep from '@/components/VideoSweep'
 import {
   getGeo,
   getStats,
@@ -53,6 +55,7 @@ export default function Cop() {
   const [railOpen, setRailOpen] = useState(false)
   const [notice, setNotice] = useState<{ tone: 'error' | 'info'; message: string } | null>(null)
   const [booting, setBooting] = useState(true)
+  const [videoSweep, setVideoSweep] = useState<{ description?: string } | null>(null)
 
   useEffect(() => {
     Promise.all([getGeo(), getStats(), getCases(), getHealth()])
@@ -169,6 +172,14 @@ export default function Cop() {
           </div>
           <Ticker stats={stats} live={liveCount} />
           <ServiceState health={health} />
+          <button
+            type="button"
+            onClick={() => setVideoSweep({})}
+            aria-label="Open video sweep"
+            className="hidden min-h-10 items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-surface-2)] px-3 py-2 text-xs font-bold text-[var(--color-ink-dim)] transition hover:text-[var(--color-teal)] xl:flex"
+          >
+            <Camera size={15} /> Video sweep
+          </button>
           <button
             type="button"
             onClick={() => setRailOpen(true)}
@@ -315,6 +326,7 @@ export default function Cop() {
                 onReject={(cand) => setResolution((m) => ({ ...m, [cand.foundId]: 'rejected' }))}
                 onClose={() => { setSelected(null); setBridge(null); setLivePin(null) }}
                 onCloseCase={close}
+                onVideoSweep={() => setVideoSweep({ description: caseDescription(selected) })}
               />
             </motion.aside>
           )}
@@ -343,6 +355,7 @@ export default function Cop() {
       </AnimatePresence>
 
       {beacon && <Beacon onClose={() => setBeacon(false)} onResult={onBeaconResult} />}
+      {videoSweep && <VideoSweep defaultDescription={videoSweep.description} onClose={() => setVideoSweep(null)} />}
     </div>
   )
 }
@@ -418,6 +431,7 @@ function Drawer({
   onReject,
   onClose,
   onCloseCase,
+  onVideoSweep,
 }: {
   c: Case
   candidates: MatchCandidate[]
@@ -429,6 +443,7 @@ function Drawer({
   onReject: (cand: MatchCandidate) => void
   onClose: () => void
   onCloseCase: () => void
+  onVideoSweep: () => void
 }) {
   const reunited = c.status === 'Reunited'
   const purged = !!c.pii.purgedAt
@@ -497,7 +512,13 @@ function Drawer({
           </div>
           {matching && <div className="space-y-2 rounded-xl bg-[var(--color-surface-2)] p-4" aria-label="Searching every center"><div className="h-2 animate-pulse rounded bg-[var(--color-line)]" /><div className="h-2 w-3/4 animate-pulse rounded bg-[var(--color-line)]" /></div>}
           {!matching && candidates.length === 0 && !reunited && (
-            <div className="rounded-xl border border-[var(--color-line-soft)] bg-[var(--color-surface-2)] px-4 py-5 text-center"><p className="text-sm font-semibold text-[var(--color-ink)]">No strong candidates yet</p><p className="mt-1 text-xs text-[var(--color-ink-dim)]">Setu will keep this case in the active queue.</p></div>
+            <div className="rounded-xl border border-[var(--color-line-soft)] bg-[var(--color-surface-2)] px-4 py-5 text-center">
+              <p className="text-sm font-semibold text-[var(--color-ink)]">No strong candidates yet</p>
+              <p className="mt-1 text-xs text-[var(--color-ink-dim)]">Use last-mile video sweep if every center search has gone cold.</p>
+              <button type="button" onClick={onVideoSweep} className="mt-4 inline-flex min-h-9 items-center justify-center gap-2 rounded-lg bg-[var(--color-bg)] px-3 text-xs font-bold text-[var(--color-teal)] hover:text-[var(--color-ink)]">
+                <Camera size={14} /> Start video sweep
+              </button>
+            </div>
           )}
           <div className="space-y-3">
             {candidates.map((cand) => (
@@ -549,4 +570,13 @@ function GeoRow({ label, value, color }: { label: string; value: string; color?:
 function mask(v?: string | null) {
   if (!v) return '—'
   return v[0] + '•••••'
+}
+
+function caseDescription(c: Case) {
+  return [
+    `${c.ageBand} ${c.gender}`,
+    c.language ? `speaks ${c.language}` : null,
+    c.lastSeenLocation ? `last seen near ${c.lastSeenLocation}` : null,
+    c.pii.physicalDescription,
+  ].filter(Boolean).join(', ')
 }

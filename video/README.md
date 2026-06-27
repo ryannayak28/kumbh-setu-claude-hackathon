@@ -20,7 +20,7 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --port 8001
 ```
 
 `ffmpeg` must be installed and available on `PATH` for result clips.
@@ -35,6 +35,10 @@ npm run dev
 ```
 
 Open `http://localhost:3000`.
+
+When using the integrated Kumbh Setu console, keep the main Setu backend on
+`:8000` and run this video API on `:8001`. The Vite app proxies `/video-api/*`
+to `http://127.0.0.1:8001/api/*`.
 
 ## Claude Scoring
 
