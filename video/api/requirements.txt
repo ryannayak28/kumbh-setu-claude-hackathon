@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+pydantic-settings
+python-dotenv
+aiofiles
+opencv-python-headless
+ultralytics
+pillow
+numpy
+tenacity
+anthropic
+pytest
