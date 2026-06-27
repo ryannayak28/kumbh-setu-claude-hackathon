@@ -35,7 +35,6 @@ export default function CandidateCard({
       style={{
         borderColor: pct >= 85 ? COLORS.saffron : COLORS.line,
         background: COLORS.surface,
-        boxShadow: pct >= 85 ? '0 0 22px -8px rgba(255,138,61,0.7)' : 'none',
       }}
     >
       <div className="flex items-start justify-between gap-3">
@@ -67,9 +66,12 @@ export default function CandidateCard({
       </div>
 
       {f && (
-        <div className="mono mt-2 text-xs text-[var(--color-ink-dim)]">
-          found at <span className="text-[var(--color-ink)]">{f.center}</span> · {f.observedLocation}
-        </div>
+        <>
+          <div className="mono mt-2 text-xs text-[var(--color-ink-dim)]">
+            found at <span className="text-[var(--color-ink)]">{f.center}</span> · {f.observedLocation}
+          </div>
+          {f.note && <p className="mt-1.5 text-xs leading-relaxed text-[var(--color-ink-dim)]">{f.note}</p>}
+        </>
       )}
 
       <p className="mt-2 text-[13px] leading-snug text-[var(--color-ink)]">{cand.rationale}</p>
@@ -90,6 +92,7 @@ export default function CandidateCard({
       {onConfirm && !resolved && (
         <div className="mt-3 flex gap-2">
           <button
+            type="button"
             onClick={onConfirm}
             className="flex flex-1 items-center justify-center gap-1.5 rounded-md py-2 text-sm font-semibold text-[#1a1206] transition hover:brightness-110"
             style={{ background: COLORS.saffron }}
@@ -97,6 +100,7 @@ export default function CandidateCard({
             <Check size={15} /> Confirm reunion
           </button>
           <button
+            type="button"
             onClick={onReject}
             className="flex items-center justify-center gap-1.5 rounded-md border border-[var(--color-line)] px-3 py-2 text-sm text-[var(--color-ink-dim)] transition hover:text-[var(--color-ink)]"
           >

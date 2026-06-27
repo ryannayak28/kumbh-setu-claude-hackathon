@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Sparkles, X, MapPin, MessageSquare, ArrowRight } from 'lucide-react'
+import { Send, Sparkles, X, MapPin, MessageSquare, ArrowRight, ShieldCheck, WifiOff } from 'lucide-react'
 import { postIntake } from '@/lib/api'
 import type { IntakeResponse } from '@/shared/types'
 import { COLORS } from '@/lib/theme'
@@ -32,19 +32,38 @@ export default function Beacon({
   onClose: () => void
   onResult: (r: IntakeResponse) => void
 }) {
-  const [text, setText] = useState('')
+  const [text, setText] = useState(() => localStorage.getItem('setu:intake-draft') ?? '')
   const [center, setCenter] = useState('Nashik Road Center')
+  const [consent, setConsent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<IntakeResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  useEffect(() => {
+    localStorage.setItem('setu:intake-draft', text)
+  }, [text])
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [onClose])
+
   async function submit() {
-    if (!text.trim()) return
+    if (!text.trim() || !consent) return
     setLoading(true)
     setError(null)
     try {
-      const r = await postIntake({ rawText: text, channel: 'whatsapp', reportingCenter: center, consent: true })
+      const r = await postIntake({ rawText: text, channel: 'whatsapp', reportingCenter: center, consent })
       setResult(r)
+      localStorage.removeItem('setu:intake-draft')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Intake failed')
     } finally {
@@ -56,32 +75,35 @@ export default function Beacon({
   const top = result?.candidates?.[0]
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4" style={{ background: 'rgba(4,7,16,0.7)' }}>
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-2 sm:p-4" style={{ background: 'rgba(4,7,16,0.78)' }}>
       <motion.div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="beacon-title"
         initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="panel grid w-full max-w-4xl overflow-hidden rounded-2xl md:grid-cols-2"
-        style={{ maxHeight: '88vh' }}
+        className="panel grid max-h-[94dvh] w-full max-w-4xl overflow-y-auto rounded-xl md:grid-cols-2 md:overflow-hidden"
       >
         {/* Left — the pilgrim's channel (no app, just a message) */}
         <div className="flex flex-col border-r border-[var(--color-line)]" style={{ background: COLORS.bg }}>
           <div className="flex items-center justify-between border-b border-[var(--color-line)] px-4 py-3">
             <div className="flex items-center gap-2">
               <MessageSquare size={16} style={{ color: COLORS.teal }} />
-              <span className="text-sm font-semibold">Beacon intake</span>
-              <span className="eyebrow">whatsapp / sms · no app</span>
+              <span id="beacon-title" className="text-sm font-semibold">Beacon intake</span>
+              <span className="hidden text-[11px] text-[var(--color-ink-dim)] sm:inline">WhatsApp/SMS simulation · no app</span>
             </div>
-            <button onClick={onClose} className="text-[var(--color-ink-dim)] hover:text-[var(--color-ink)]">
+            <button type="button" onClick={onClose} aria-label="Close intake" className="rounded-md p-1 text-[var(--color-ink-dim)] hover:bg-[var(--color-surface)] hover:text-[var(--color-ink)]">
               <X size={18} />
             </button>
           </div>
 
           <div className="flex-1 space-y-3 overflow-y-auto p-4">
-            <p className="eyebrow">Try a real-world report</p>
+            <p className="text-xs font-medium text-[var(--color-ink-dim)]">Try a realistic multilingual report</p>
             <div className="flex flex-wrap gap-2">
               {SAMPLES.map((s) => (
                 <button
                   key={s.label}
+                  type="button"
                   onClick={() => {
                     setText(s.text)
                     setCenter(s.center)
@@ -106,6 +128,7 @@ export default function Beacon({
               <span className="eyebrow">reporting at</span>
               <select
                 value={center}
+                aria-label="Reporting center"
                 onChange={(e) => setCenter(e.target.value)}
                 className="mono flex-1 rounded border border-[var(--color-line)] bg-[var(--color-surface)] px-2 py-1 text-xs text-[var(--color-ink)]"
               >
@@ -120,17 +143,30 @@ export default function Beacon({
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Type a report in any language…"
                 rows={2}
-                className="flex-1 resize-none rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--color-teal)]"
+                maxLength={2000}
+                aria-label="Missing-person report"
+                className="flex-1 resize-none rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm outline-none placeholder:text-[#7f89a7] focus:border-[var(--color-teal)]"
               />
               <button
+                type="button"
                 onClick={submit}
-                disabled={loading || !text.trim()}
-                className="flex h-10 w-10 items-center justify-center rounded-lg disabled:opacity-40"
+                disabled={loading || !text.trim() || !consent}
+                aria-label="Send report"
+                className="flex h-10 w-10 items-center justify-center rounded-lg disabled:cursor-not-allowed disabled:opacity-40"
                 style={{ background: COLORS.saffron, color: '#1a1206' }}
               >
                 <Send size={17} />
               </button>
             </div>
+            <label className="mt-2 flex cursor-pointer items-start gap-2 text-[11px] leading-relaxed text-[var(--color-ink-dim)]">
+              <input
+                type="checkbox"
+                checked={consent}
+                onChange={(event) => setConsent(event.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-[var(--color-saffron)]"
+              />
+              <span>I consent to using this report only to locate and reunite this person. Personal details will be purged when the case closes.</span>
+            </label>
           </div>
         </div>
 
@@ -138,7 +174,7 @@ export default function Beacon({
         <div className="flex flex-col" style={{ background: COLORS.surface }}>
           <div className="flex items-center gap-2 border-b border-[var(--color-line)] px-4 py-3">
             <Sparkles size={16} style={{ color: COLORS.saffron }} />
-            <span className="text-sm font-semibold">Claude normalises the report</span>
+            <span className="text-sm font-semibold">Structured operational record</span>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4">
@@ -146,7 +182,7 @@ export default function Beacon({
               <p className="mt-8 text-center text-sm text-[var(--color-ink-dim)]">
                 Pick a sample or type a report, then send.
                 <br />
-                Claude extracts, translates and geo-resolves it.
+                Setu extracts, translates, geo-resolves, and searches every center.
               </p>
             )}
             {loading && (
@@ -162,7 +198,10 @@ export default function Beacon({
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="mono text-sm text-[var(--color-ink)]">{c.id}</span>
-                    <span className="eyebrow">extracted by {result?.extractedBy}</span>
+                    <span className="flex items-center gap-1 text-[11px] text-[var(--color-ink-dim)]">
+                      {result?.extractedBy === 'claude' ? <Sparkles size={11} /> : <WifiOff size={11} />}
+                      {result?.extractedBy === 'claude' ? 'Claude-assisted' : 'Resilient local fallback'}
+                    </span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <Field k="Gender" v={c.gender} />
@@ -197,12 +236,17 @@ export default function Beacon({
                   )}
 
                   <button
+                    type="button"
                     onClick={() => result && onResult(result)}
                     className="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-[#1a1206]"
                     style={{ background: COLORS.saffron }}
                   >
                     Hand to ops console <ArrowRight size={16} />
                   </button>
+                  <p className="flex items-center justify-center gap-1.5 text-center text-[11px] text-[var(--color-ink-dim)]">
+                    <ShieldCheck size={12} style={{ color: COLORS.green }} />
+                    A human operator must confirm any reunion.
+                  </p>
                 </motion.div>
               )}
             </AnimatePresence>

@@ -87,7 +87,7 @@ Use these directly; no need to recompute. **These power the value pitch.**
 | **Copilot autonomy** | **Tiered**: auto low-risk (dedupe, geo-routing); human-approved high-stakes (confirm match, alert police, escalate). |
 | **AI** | **Pre-trained Claude** via API (README: do not train from scratch). Latest model. Key server-side. Include a heuristic fallback so the app runs without a key. |
 | **UI** | Designed **fresh via the frontend-design skill** — modern, distinctive ops/command-center aesthetic. The earlier `problem-space.html` palette is context only, NOT the identity. |
-| **Stack** | React + Vite + TypeScript + Tailwind + react-leaflet; thin Node/Express backend (data seeding + Claude proxy); in-memory/SQLite store. All local — nothing to provision. |
+| **Stack** | React + Vite + TypeScript + Tailwind + react-leaflet; thin Python/FastAPI backend (data seeding + Claude proxy); in-memory Python store with an optional SQLite path. All local — nothing to provision. |
 
 ---
 

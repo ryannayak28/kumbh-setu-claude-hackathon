@@ -11,7 +11,7 @@ router = APIRouter()
 def _mask(case, reveal: bool) -> dict:
     """DPDP: PII masked by default in the ops UI (PLAN.md §2.5)."""
     d = case.model_dump()
-    if not reveal and case.status != "Reunited":
+    if not reveal:
         pii = d["pii"]
         if pii.get("name"):
             pii["name"] = pii["name"][0] + "•••"
@@ -21,9 +21,10 @@ def _mask(case, reveal: bool) -> dict:
 
 
 @router.get("/cases")
-def list_cases(reveal: bool = False) -> dict:
+def list_cases() -> dict:
+    """Operational list is always masked; bulk PII reveal is intentionally absent."""
     s = get_store()
-    return {"cases": [_mask(c, reveal) for c in s.cases.values()]}
+    return {"cases": [_mask(c, False) for c in s.cases.values()]}
 
 
 @router.get("/cases/{case_id}")
@@ -32,6 +33,8 @@ def get_case(case_id: str, reveal: bool = False) -> dict:
     c = s.cases.get(case_id)
     if not c:
         raise HTTPException(404, "Case not found")
+    if reveal:
+        s.record_reveal(case_id)
     return _mask(c, reveal)
 
 
@@ -69,9 +72,12 @@ class LinkBody(BaseModel):
 def confirm(body: LinkBody) -> dict:
     """Operator approves a reunification candidate → link + advance to Reunited."""
     s = get_store()
-    if body.caseId not in s.cases or body.foundId not in s.found:
-        raise HTTPException(404, "Case or found record not found")
-    s.link(body.caseId, body.foundId)
+    try:
+        s.link(body.caseId, body.foundId)
+    except KeyError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
     return {"ok": True, "case": s.cases[body.caseId].model_dump()}
 
 
@@ -85,5 +91,8 @@ def close(body: CloseBody) -> dict:
     s = get_store()
     if body.caseId not in s.cases:
         raise HTTPException(404, "Case not found")
-    s.purge_pii(body.caseId)
+    try:
+        s.purge_pii(body.caseId)
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
     return {"ok": True, "case": s.cases[body.caseId].model_dump()}

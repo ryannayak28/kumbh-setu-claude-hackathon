@@ -12,7 +12,7 @@ import type {
 
 async function get<T>(url: string): Promise<T> {
   const res = await fetch(url)
-  if (!res.ok) throw new Error(`${url} failed (${res.status})`)
+  if (!res.ok) throw new Error(await errorMessage(res, `${url} failed (${res.status})`))
   return res.json()
 }
 
@@ -23,10 +23,24 @@ async function post<T>(url: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   })
   if (!res.ok) {
-    const detail = await res.text().catch(() => '')
-    throw new Error(detail || `${url} failed (${res.status})`)
+    throw new Error(await errorMessage(res, `${url} failed (${res.status})`))
   }
   return res.json()
+}
+
+async function errorMessage(res: Response, fallback: string) {
+  const raw = await res.text().catch(() => '')
+  if (!raw) return fallback
+  try {
+    const parsed = JSON.parse(raw) as { detail?: string | { msg?: string }[] }
+    if (typeof parsed.detail === 'string') return parsed.detail
+    if (Array.isArray(parsed.detail)) {
+      return parsed.detail.map((item) => item.msg).filter(Boolean).join(' · ') || fallback
+    }
+  } catch {
+    return raw
+  }
+  return fallback
 }
 
 export type Health = { status: string; model: string; model_ready: boolean }
@@ -34,8 +48,10 @@ export const getHealth = () => get<Health>('/api/health')
 
 export const getGeo = () => get<Geo>('/api/geo')
 export const getStats = () => get<Stats>('/api/stats')
-export const getCases = (reveal = false) =>
-  get<{ cases: Case[] }>(`/api/cases?reveal=${reveal}`).then((r) => r.cases)
+export const getCases = () =>
+  get<{ cases: Case[] }>('/api/cases').then((r) => r.cases)
+export const getCase = (caseId: string, reveal = false) =>
+  get<Case>(`/api/cases/${caseId}?reveal=${reveal}`)
 export const getFound = () => get<{ found: FoundPerson[] }>('/api/found').then((r) => r.found)
 export const getTrack = (caseId: string) => get<TrackInfo>(`/api/track/${caseId}`)
 

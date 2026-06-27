@@ -13,7 +13,7 @@ Single coherent web app = the "Palantir layer".
    Pilgrim ──────▶  Beacon intake (WhatsApp-sim / QR web form)   │
    (no app)      │        │                                      │
                  │        ▼                                      │
-   Operator ─────▶  Express API  ──▶  Claude proxy (normalize,   │
+   Operator ─────▶  FastAPI API  ──▶  Claude proxy (normalize,   │
    (kiosk)       │   (seed store)     translate, extract, match) │
                  │        │                ▲                     │
                  │        ▼                │ heuristic fallback  │
@@ -24,7 +24,7 @@ Single coherent web app = the "Palantir layer".
                  └──────────────────────────────────────────────┘
 ```
 
-**Stack:** React + Vite + TypeScript, Tailwind, react-leaflet (map). Thin Node/Express backend: serves seeded data + proxies Claude (key server-side, prompts in `server/prompts/`). Store = in-memory JSON seeded at boot (SQLite optional). All local — nothing to provision, so the demo can't break on network/provisioning.
+**Stack:** React + Vite + TypeScript, Tailwind, react-leaflet (map). Thin Python/FastAPI backend: serves seeded data + proxies Claude with the key kept server-side. Store = in-memory Python objects seeded at boot (SQLite optional). All local — nothing to provision, so the demo can't break on network/provisioning.
 
 **Why this stack:** fastest path to a polished, reliable, all-local demo. Full FastAPI+DB adds demo-risk for little pitch upside; Streamlit loses the map-driven ops feel that *is* the pitch.
 
@@ -61,7 +61,7 @@ Single coherent web app = the "Palantir layer".
 - **Normalize / translate / extract** messy multilingual free-text intake → structured `Case` fields.
 - **Entity resolution:** cross-center match ranking with confidence + human-readable rationale (the hard, defensible core).
 - **Light generation:** the WhatsApp status reply / case-id confirmation text.
-- All via Anthropic API behind the Express proxy. **Heuristic fallback** (name/phonetic + age-band + gender + location/zone + language overlap) runs when no API key, so the app always works.
+- All via Anthropic API behind the FastAPI service. **Heuristic fallback** (name/phonetic + age-band + gender + location/zone + language overlap) runs when no API key, so the app always works.
 
 ---
 
@@ -111,14 +111,16 @@ interface MatchCandidate { caseId:string; score:number;
 setu/
   .env                 # ANTHROPIC_API_KEY=...
   package.json         # dev script runs server + vite concurrently
-  server/
-    index.ts
-    routes/  intake.ts  match.ts  cases.ts
-    prompts/ normalize.ts  match.ts
-    data/    seed.ts   # CSV/KML → JSON; synthesize FoundPerson pairs
-             geo.ts    # nearest-CCTV / nearest-station / point-in-zone helpers
-             claude.ts # Anthropic client + heuristic fallback
-  src/
+  backend/
+    app/
+      main.py
+      routes/  intake.py  match.py  cases.py  geo.py
+      data/    seed.py        # CSV/KML → Pydantic models; synthesize FoundPerson pairs
+               geo.py         # nearest-CCTV / nearest-station / point-in-zone helpers
+               geo_loader.py  # authoritative KML with CSV fallback
+      claude_setu.py          # Anthropic client + heuristic fallback
+  frontend/
+    src/
     modules/ cop/  beacon/  reunify/  seeker/  governance/
     components/ map/  case-card/  candidate-card/  layout/  wordmark/
     lib/ api.ts  theme.ts   # design tokens from the frontend-design pass
@@ -129,9 +131,9 @@ setu/
 ---
 
 ## 6. Build order
-1. **Scaffold** — Vite React TS + Tailwind + Express; `dev` runs both concurrently; folder skeleton.
+1. **Scaffold** — Vite React TS + Tailwind + Python/FastAPI; `run-dev.ps1` starts both services; folder skeleton.
 2. **Data layer** — `shared/types.ts`; `seed.ts` (parse CSV now; KML-capable for the revised files); `geo.ts` helpers; synthesize `FoundPerson` match pairs (incl. the planted Act-2 94% pair).
-3. **Server** — `claude.ts` (Anthropic + heuristic fallback); prompts; routes `intake` / `match` / `cases`.
+3. **Server** — `claude_setu.py` (Anthropic + heuristic fallback); prompts; FastAPI routes `intake` / `match` / `cases`.
 4. **Design language** — run the **frontend-design skill** to produce tokens + the ops/command-center aesthetic; write `theme.ts` + app shell/layout + wordmark.
 5. **COP** — map + static layers (from `kumbh-data-visualization-by-gpt.html` plotting approach) + live case pins + zone/case drill-down.
 6. **Beacon** — QR web form + simulated WhatsApp thread + operator form → wired to `/api/intake`.

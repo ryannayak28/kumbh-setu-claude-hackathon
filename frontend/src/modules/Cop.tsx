@@ -1,39 +1,34 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Radio,
-  Cctv,
-  Shield,
-  TriangleAlert,
-  Hexagon,
   Plus,
   Eye,
   EyeOff,
   X,
   Search,
   Lock,
+  Menu,
+  WifiOff,
+  Bot,
+  AlertCircle,
 } from 'lucide-react'
 import SetuMap, { type Bridge, type LayerFlags } from '@/components/SetuMap'
 import Beacon from '@/components/Beacon'
 import CandidateCard from '@/components/CandidateCard'
+import OperationsRail from '@/components/OperationsRail'
 import {
   getGeo,
   getStats,
   getCases,
+  getCase,
+  getHealth,
   postMatch,
   confirmReunify,
   closeCase,
 } from '@/lib/api'
+import type { Health } from '@/lib/api'
 import type { Case, Geo, MatchCandidate, Stats, IntakeResponse } from '@/shared/types'
 import { COLORS, STATUS_COLOR, centerCoord } from '@/lib/theme'
-
-const LAYER_DEFS: { key: keyof LayerFlags; label: string; icon: typeof Cctv; color: string; count?: (g: Geo) => number }[] = [
-  { key: 'cases', label: 'Active cases', icon: Radio, color: COLORS.saffron },
-  { key: 'cctv', label: 'CCTV cameras', icon: Cctv, color: COLORS.teal, count: (g) => g.cctv.length },
-  { key: 'police', label: 'Police stations', icon: Shield, color: '#7aa2ff', count: (g) => g.stations.length },
-  { key: 'chokepoints', label: 'Chokepoints', icon: TriangleAlert, color: COLORS.amber, count: (g) => g.chokepoints.length },
-  { key: 'zones', label: 'Zone boundaries', icon: Hexagon, color: COLORS.line, count: (g) => g.zones.length },
-]
 
 export default function Cop() {
   const [geo, setGeo] = useState<Geo | null>(null)
@@ -49,11 +44,22 @@ export default function Cop() {
   const [livePin, setLivePin] = useState<[number, number] | null>(null)
   const [flyTo, setFlyTo] = useState<[number, number] | null>(null)
   const [reveal, setReveal] = useState(false)
+  const [health, setHealth] = useState<Health | null>(null)
+  const [selectedZone, setSelectedZone] = useState<string | null>(null)
+  const [railOpen, setRailOpen] = useState(false)
+  const [notice, setNotice] = useState<{ tone: 'error' | 'info'; message: string } | null>(null)
+  const [booting, setBooting] = useState(true)
 
   useEffect(() => {
-    getGeo().then(setGeo).catch(console.error)
-    getStats().then(setStats).catch(console.error)
-    getCases().then(setCases).catch(console.error)
+    Promise.all([getGeo(), getStats(), getCases(), getHealth()])
+      .then(([geoData, statsData, caseData, healthData]) => {
+        setGeo(geoData)
+        setStats(statsData)
+        setCases(caseData)
+        setHealth(healthData)
+      })
+      .catch((error) => setNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Could not load the operating picture.' }))
+      .finally(() => setBooting(false))
   }, [])
 
   async function selectCase(c: Case) {
@@ -62,11 +68,20 @@ export default function Cop() {
     setLivePin(null)
     setCandidates([])
     setResolution({})
+    setReveal(false)
+    setRailOpen(false)
     if (c.geo.lastSeenLatLng) setFlyTo([...c.geo.lastSeenLatLng])
     setMatching(true)
     try {
       const r = await postMatch(c.id)
       setCandidates(r.candidates)
+      if (r.candidates.length && !['Reunited', 'Transferred'].includes(c.status)) {
+        const matched = { ...c, status: 'Matched' as const }
+        setSelected(matched)
+        setCases((items) => items.map((item) => item.id === c.id ? matched : item))
+      }
+    } catch (error) {
+      setNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Could not search for matches.' })
     } finally {
       setMatching(false)
     }
@@ -79,6 +94,7 @@ export default function Cop() {
     setCandidates(r.candidates)
     setResolution({})
     setBridge(null)
+    setReveal(false)
     if (r.case.geo.lastSeenLatLng) {
       setLivePin([...r.case.geo.lastSeenLatLng])
       setFlyTo([...r.case.geo.lastSeenLatLng])
@@ -87,24 +103,46 @@ export default function Cop() {
 
   async function confirm(cand: MatchCandidate) {
     if (!selected) return
-    const res = await confirmReunify(selected.id, cand.foundId)
-    setResolution((m) => ({ ...m, [cand.foundId]: 'confirmed' }))
-    setSelected(res.case)
-    setCases((cs) => cs.map((c) => (c.id === res.case.id ? res.case : c)))
-    // Draw the bridge: found center  ⇄  family's reporting center.
-    const a = cand.found ? centerCoord(cand.found.center) : null
-    const b = centerCoord(res.case.reportingCenter)
-    if (a && b) {
-      setBridge({ from: a, to: b })
-      setFlyTo([(a[0] + b[0]) / 2, (a[1] + b[1]) / 2])
+    try {
+      const res = await confirmReunify(selected.id, cand.foundId)
+      setResolution((m) => ({ ...m, [cand.foundId]: 'confirmed' }))
+      setSelected(res.case)
+      setCases((cs) => cs.map((c) => (c.id === res.case.id ? res.case : c)))
+      setNotice({ tone: 'info', message: 'Reunion confirmed. Both centers can now act on the same record.' })
+      const a = cand.found ? centerCoord(cand.found.center) : null
+      const b = centerCoord(res.case.reportingCenter)
+      if (a && b) {
+        setBridge({ from: a, to: b })
+        setFlyTo([(a[0] + b[0]) / 2, (a[1] + b[1]) / 2])
+      }
+    } catch (error) {
+      setNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Could not confirm this reunion.' })
     }
   }
 
   async function close() {
     if (!selected) return
-    const res = await closeCase(selected.id)
-    setSelected(res.case)
-    setCases((cs) => cs.map((c) => (c.id === res.case.id ? res.case : c)))
+    try {
+      const res = await closeCase(selected.id)
+      setSelected(res.case)
+      setCases((cs) => cs.map((c) => (c.id === res.case.id ? res.case : c)))
+      setReveal(false)
+      setNotice({ tone: 'info', message: 'Case closed. Personal data was purged.' })
+    } catch (error) {
+      setNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Could not close this case.' })
+    }
+  }
+
+  async function toggleReveal() {
+    if (!selected) return
+    try {
+      const next = !reveal
+      const fresh = await getCase(selected.id, next)
+      setSelected(fresh)
+      setReveal(next)
+    } catch (error) {
+      setNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Could not update protected-data visibility.' })
+    }
   }
 
   const liveCount = cases.filter((c) => ['Reported', 'Pending', 'Matched', 'Unresolved'].includes(c.status)).length
@@ -112,66 +150,87 @@ export default function Cop() {
   return (
     <div className="flex h-full flex-col" style={{ background: COLORS.bg }}>
       {/* Masthead */}
-      <header className="z-20 flex items-center justify-between border-b border-[var(--color-line)] px-5 py-2.5" style={{ background: COLORS.bg }}>
-        <div className="flex items-baseline gap-3">
+      <header className="z-20 flex min-h-14 items-center justify-between border-b border-[var(--color-line)] px-3 py-2 sm:px-5" style={{ background: COLORS.bg }}>
+        <div className="flex min-w-0 items-baseline gap-2 sm:gap-3">
           <span style={{ fontFamily: 'var(--font-deva)', color: COLORS.saffron }} className="text-2xl font-bold leading-none">
             सेतु
           </span>
-          <span className="text-xl font-bold tracking-tight">Setu</span>
+          <span className="hidden text-xl font-bold tracking-tight sm:inline">Setu</span>
           <span className="eyebrow hidden sm:inline">Common Operating Picture · Simhastha Kumbh 2027</span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <ServiceState health={health} />
           <Ticker stats={stats} live={liveCount} />
           <button
+            type="button"
+            onClick={() => setRailOpen(true)}
+            aria-label="Open cases and map layers"
+            className="rounded-md border border-[var(--color-line)] p-2 text-[var(--color-ink-dim)] hover:bg-[var(--color-surface)] hover:text-[var(--color-ink)] md:hidden"
+          >
+            <Menu size={18} />
+          </button>
+          <button
+            type="button"
             onClick={() => setBeacon(true)}
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold text-[#1a1206]"
+            aria-label="New report"
+            className="flex min-h-9 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold text-[#1a1206] transition hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-saffron)]"
             style={{ background: COLORS.saffron }}
           >
-            <Plus size={16} /> New report
+            <Plus size={16} /> <span className="hidden sm:inline">New report</span>
           </button>
         </div>
       </header>
 
       <div className="relative flex flex-1 overflow-hidden">
-        {/* Layer rail */}
-        <aside className="z-10 hidden w-60 shrink-0 flex-col gap-4 border-r border-[var(--color-line)] p-4 md:flex" style={{ background: COLORS.bg }}>
-          <div>
-            <p className="eyebrow mb-2">Map layers</p>
-            <div className="space-y-1">
-              {LAYER_DEFS.map((l) => {
-                const on = layers[l.key]
-                const Icon = l.icon
-                return (
-                  <button
-                    key={l.key}
-                    onClick={() => setLayers((s) => ({ ...s, [l.key]: !s[l.key] }))}
-                    className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition hover:bg-[var(--color-surface)]"
-                    style={{ color: on ? COLORS.ink : COLORS.inkDim }}
-                  >
-                    <span className="flex h-3 w-3 items-center justify-center rounded-full" style={{ background: on ? l.color : 'transparent', border: `1px solid ${on ? l.color : COLORS.line}` }} />
-                    <Icon size={15} style={{ color: on ? l.color : COLORS.inkDim }} />
-                    <span className="flex-1 text-left">{l.label}</span>
-                    {geo && l.count && <span className="mono text-[10px] text-[var(--color-ink-dim)]">{l.count(geo)}</span>}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          <div className="mt-auto rounded-lg border border-[var(--color-line)] p-3">
-            <p className="eyebrow mb-2">Why it matters</p>
-            {stats ? (
-              <ul className="space-y-2 text-xs text-[var(--color-ink-dim)]">
-                <Pitch v={`${stats.crossCenterDuplicates}`} l="cross-center duplicates today — invisible across centers" color={COLORS.saffron} />
-                <Pitch v={`${stats.unresolvedPct}%`} l={`still unresolved · tail to ${stats.maxHours}h`} color={COLORS.red} />
-                <Pitch v={`${stats.elderlyPct}%`} l="of the missing are 61+ — the at-risk group" color={COLORS.amber} />
-                <Pitch v={`${stats.languages}`} l="languages, no clean join key" color={COLORS.teal} />
-              </ul>
-            ) : (
-              <p className="text-xs text-[var(--color-ink-dim)]">loading…</p>
-            )}
-          </div>
+        <aside className="z-10 hidden w-72 shrink-0 border-r border-[var(--color-line)] md:block">
+          <OperationsRail
+            geo={geo}
+            stats={stats}
+            cases={cases}
+            layers={layers}
+            selectedCaseId={selected?.id}
+            selectedZone={selectedZone}
+            onLayersChange={setLayers}
+            onSelectCase={selectCase}
+            onClearZone={() => setSelectedZone(null)}
+          />
         </aside>
+
+        <AnimatePresence>
+          {railOpen && (
+            <>
+              <motion.button
+                type="button"
+                aria-label="Dismiss operations panel"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setRailOpen(false)}
+                className="absolute inset-0 z-30 bg-black/60 md:hidden"
+              />
+              <motion.aside
+                initial={{ x: '-100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-y-0 left-0 z-40 w-[min(88vw,320px)] border-r border-[var(--color-line)] md:hidden"
+              >
+                <OperationsRail
+                  geo={geo}
+                  stats={stats}
+                  cases={cases}
+                  layers={layers}
+                  selectedCaseId={selected?.id}
+                  selectedZone={selectedZone}
+                  onLayersChange={setLayers}
+                  onSelectCase={selectCase}
+                  onClearZone={() => setSelectedZone(null)}
+                  onClose={() => setRailOpen(false)}
+                />
+              </motion.aside>
+            </>
+          )}
+        </AnimatePresence>
 
         {/* Map (isolate so Leaflet's internal panes don't paint over the drawer) */}
         <main className="relative isolate flex-1">
@@ -184,10 +243,15 @@ export default function Cop() {
               flyTo={flyTo}
               bridge={bridge}
               livePin={livePin}
+              selectedZone={selectedZone}
+              onSelectZone={(zone) => {
+                setSelectedZone(zone)
+                setRailOpen(true)
+              }}
               onSelectCase={selectCase}
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-[var(--color-ink-dim)]">Loading operating picture…</div>
+            <LoadingMap failed={!booting} />
           )}
 
           {bridge && (
@@ -205,8 +269,7 @@ export default function Cop() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: 380, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 320, damping: 34 }}
-              className="absolute right-0 top-0 z-10 flex h-full w-[var(--w)] flex-col border-l border-[var(--color-line)] panel"
-              style={{ ['--w' as string]: '370px' }}
+              className="absolute inset-0 z-20 flex h-full flex-col border-l border-[var(--color-line)] panel sm:inset-y-0 sm:left-auto sm:w-[390px]"
             >
               <Drawer
                 c={selected}
@@ -214,7 +277,7 @@ export default function Cop() {
                 matching={matching}
                 resolution={resolution}
                 reveal={reveal}
-                onReveal={() => setReveal((r) => !r)}
+                onReveal={toggleReveal}
                 onConfirm={confirm}
                 onReject={(cand) => setResolution((m) => ({ ...m, [cand.foundId]: 'rejected' }))}
                 onClose={() => { setSelected(null); setBridge(null); setLivePin(null) }}
@@ -224,6 +287,27 @@ export default function Cop() {
           )}
         </AnimatePresence>
       </div>
+
+      <AnimatePresence>
+        {notice && (
+          <motion.div
+            role="status"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            className="fixed bottom-4 left-1/2 z-50 flex w-[min(92vw,560px)] -translate-x-1/2 items-start gap-2 rounded-lg border px-3 py-2.5 text-sm"
+            style={{
+              background: COLORS.surface,
+              borderColor: notice.tone === 'error' ? COLORS.red : COLORS.teal,
+              color: COLORS.ink,
+            }}
+          >
+            <AlertCircle size={16} className="mt-0.5 shrink-0" style={{ color: notice.tone === 'error' ? COLORS.red : COLORS.teal }} />
+            <span className="flex-1">{notice.message}</span>
+            <button type="button" onClick={() => setNotice(null)} aria-label="Dismiss notification" className="text-[var(--color-ink-dim)] hover:text-[var(--color-ink)]"><X size={16} /></button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {beacon && <Beacon onClose={() => setBeacon(false)} onResult={onBeaconResult} />}
     </div>
@@ -250,12 +334,40 @@ function Ticker({ stats, live }: { stats: Stats | null; live: number }) {
   )
 }
 
-function Pitch({ v, l, color }: { v: string; l: string; color: string }) {
+function ServiceState({ health }: { health: Health | null }) {
+  if (!health) {
+    return <span className="hidden h-8 w-24 animate-pulse rounded-md bg-[var(--color-surface)] sm:block" aria-label="Checking service status" />
+  }
+  const modelReady = health.model_ready
   return (
-    <li className="flex gap-2">
-      <span className="mono shrink-0 font-semibold tabular-nums" style={{ color }}>{v}</span>
-      <span className="leading-tight">{l}</span>
-    </li>
+    <div
+      className="hidden items-center gap-2 rounded-md bg-[var(--color-surface)] px-2.5 py-1.5 sm:flex"
+      title={modelReady ? `${health.model} is available` : 'Deterministic extraction and matching remain available without a model key'}
+    >
+      {modelReady ? <Bot size={14} style={{ color: COLORS.teal }} /> : <WifiOff size={14} style={{ color: COLORS.amber }} />}
+      <span className="text-[11px] font-medium text-[var(--color-ink)]">{modelReady ? 'Claude live' : 'Resilient mode'}</span>
+      <span className="h-1.5 w-1.5 rounded-full" style={{ background: modelReady ? COLORS.green : COLORS.amber }} />
+    </div>
+  )
+}
+
+function LoadingMap({ failed }: { failed: boolean }) {
+  return (
+    <div className="flex h-full items-center justify-center bg-[var(--color-bg)] px-6 text-center">
+      {failed ? (
+        <div>
+          <WifiOff size={24} className="mx-auto mb-3 text-[var(--color-red)]" />
+          <p className="text-sm font-medium text-[var(--color-ink)]">Operating picture unavailable</p>
+          <p className="mt-1 max-w-sm text-xs leading-relaxed text-[var(--color-ink-dim)]">The FastAPI service could not be reached. Check that the backend is running on port 8000, then refresh.</p>
+        </div>
+      ) : (
+        <div className="w-full max-w-xs space-y-3" aria-label="Loading operating picture">
+          <div className="h-2 animate-pulse rounded bg-[var(--color-surface-2)]" />
+          <div className="h-2 w-4/5 animate-pulse rounded bg-[var(--color-surface-2)]" />
+          <div className="h-2 w-3/5 animate-pulse rounded bg-[var(--color-surface-2)]" />
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -292,7 +404,7 @@ function Drawer({
           <span className="mono text-sm font-semibold">{c.id}</span>
           <span className="rounded px-1.5 py-0.5 text-[10px] font-medium" style={{ background: 'var(--color-surface-2)', color: STATUS_COLOR[c.status] }}>{c.status}</span>
         </div>
-        <button onClick={onClose} className="text-[var(--color-ink-dim)] hover:text-[var(--color-ink)]"><X size={18} /></button>
+        <button type="button" onClick={onClose} aria-label="Close case details" className="rounded-md p-1 text-[var(--color-ink-dim)] hover:bg-[var(--color-surface)] hover:text-[var(--color-ink)]"><X size={18} /></button>
       </div>
 
       <div className="flex-1 space-y-4 overflow-y-auto p-4">
@@ -309,7 +421,7 @@ function Drawer({
           <div className="mb-2 flex items-center justify-between">
             <span className="eyebrow flex items-center gap-1"><Lock size={11} /> PII · DPDP-protected</span>
             {!purged && (
-              <button onClick={onReveal} className="flex items-center gap-1 text-[11px] text-[var(--color-ink-dim)] hover:text-[var(--color-ink)]">
+              <button type="button" onClick={onReveal} className="flex items-center gap-1 rounded px-1 py-0.5 text-[11px] text-[var(--color-ink-dim)] hover:bg-[var(--color-surface)] hover:text-[var(--color-ink)]">
                 {reveal ? <EyeOff size={12} /> : <Eye size={12} />} {reveal ? 'mask' : 'reveal'}
               </button>
             )}
@@ -352,8 +464,8 @@ function Drawer({
                 cand={cand}
                 reportingCenter={c.reportingCenter}
                 resolved={resolution[cand.foundId] ?? null}
-                onConfirm={() => onConfirm(cand)}
-                onReject={() => onReject(cand)}
+                onConfirm={reunited ? undefined : () => onConfirm(cand)}
+                onReject={reunited ? undefined : () => onReject(cand)}
               />
             ))}
           </div>
@@ -363,7 +475,7 @@ function Drawer({
       {/* Footer actions */}
       <div className="border-t border-[var(--color-line)] p-3">
         {reunited && !purged && (
-          <button onClick={onCloseCase} className="w-full rounded-lg border border-[var(--color-line)] py-2 text-sm text-[var(--color-ink)] transition hover:border-[var(--color-green)]">
+          <button type="button" onClick={onCloseCase} className="w-full rounded-lg border border-[var(--color-line)] py-2 text-sm text-[var(--color-ink)] transition hover:border-[var(--color-green)]">
             Close case · auto-purge PII
           </button>
         )}

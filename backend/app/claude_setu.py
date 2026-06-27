@@ -31,6 +31,20 @@ def _json_block(text: str):
 _AGE_BANDS = ["0-12", "13-17", "18-40", "41-60", "61-70", "71-80", "80+"]
 _KNOWN_LANGS = ["Hindi", "Bengali", "Kannada", "Maithili", "Gujarati", "Telugu",
                 "Bhojpuri", "Awadhi", "Marathi", "Tamil", "Odia", "Punjabi"]
+_KNOWN_LOCATIONS = [
+    "Sadhugram Gate 2",
+    "Nashik Road Station",
+    "Madsangvi Transit",
+    "Ramkund Ghat",
+    "Trimbak Road",
+    "Gauri Patangan",
+    "Dasak Ghat",
+    "Adgaon Parking",
+    "Nandur Ghat",
+    "Laxmi Narayan Ghat",
+    "Takli Sangam",
+    "Bus Stand Nashik",
+]
 
 
 def heuristic_extract(raw: str) -> dict:
@@ -48,7 +62,7 @@ def heuristic_extract(raw: str) -> dict:
         elif age <= 80: band = "71-80"
         else: band = "80+"
         out["ageBand"] = band
-    if any(w in raw_l for w in ["father", "grandfather", "husband", "son", "uncle", "man", "male", "baba", "dada"]):
+    if any(w in raw_l for w in ["father", "grandfather", "husband", "son", "uncle", "man", "male", "baba", "dada", "papa", "pitaji"]):
         out["gender"] = "Male"
     elif any(w in raw_l for w in ["mother", "grandmother", "wife", "daughter", "aunt", "woman", "female", "maa", "amma"]):
         out["gender"] = "Female"
@@ -56,10 +70,18 @@ def heuristic_extract(raw: str) -> dict:
         if lang.lower() in raw_l:
             out["language"] = lang
             break
-    # Last-seen: "near X" / "at X"
-    m = re.search(r"(?:near|at|around|by)\s+([a-z][a-z\s]{2,30})", raw_l)
-    if m:
-        out["lastSeenLocation"] = m.group(1).strip().title()
+    # Prefer known operational landmarks, including common shortened forms in
+    # transliterated messages ("Ramkund ke paas", "... er kachhe").
+    for location in _KNOWN_LOCATIONS:
+        canonical = location.lower()
+        short = canonical.replace(" ghat", "").replace(" station", "")
+        if canonical in raw_l or (len(short) >= 6 and short in raw_l):
+            out["lastSeenLocation"] = location
+            break
+    if "lastSeenLocation" not in out:
+        m = re.search(r"(?:near|at|around|by)\s+([a-z][a-z\s]{2,30})", raw_l)
+        if m:
+            out["lastSeenLocation"] = m.group(1).strip().title()
     return out
 
 
@@ -84,8 +106,17 @@ def extract(raw: str) -> tuple[dict, str]:
             messages=[{"role": "user", "content": prompt}],
         )
         data = _json_block(msg.content[0].text) or {}
-        # Merge over heuristic so we never lose a field the model skipped.
-        merged = {**heuristic_extract(raw), **{k: v for k, v in data.items() if v}}
+        baseline = heuristic_extract(raw)
+        # Merge over the deterministic baseline so we never lose a field the
+        # model skipped. Prefer the canonical operational landmark name when
+        # the model returns only a shortened form such as "Ramkund".
+        merged = {**baseline, **{k: v for k, v in data.items() if v}}
+        canonical_location = baseline.get("lastSeenLocation")
+        model_location = data.get("lastSeenLocation")
+        if canonical_location and model_location:
+            a, b = canonical_location.lower(), str(model_location).lower()
+            if a in b or b in a:
+                merged["lastSeenLocation"] = canonical_location
         return merged, "claude"
     except Exception:
         return heuristic_extract(raw), "heuristic"
@@ -222,7 +253,15 @@ def match(case: Case, found: list[FoundPerson]) -> tuple[list[MatchCandidate], s
                 rationale=d.get("rationale", ""), fieldsMatched=d.get("fieldsMatched", []),
                 tier="auto" if d.get("tier") == "auto" else "review", found=by_id[fid],
             ))
-        cands.sort(key=lambda c: c.score, reverse=True)
-        return cands[:5], "claude"
+        # Claude adds multilingual/semantic reasoning, while the deterministic
+        # scorer is a safety net: a model response may omit a strong structured
+        # match, but it must not make that candidate disappear from operations.
+        merged_by_id = {c.foundId: c for c in heuristic_match(case, found)}
+        for candidate in cands:
+            baseline = merged_by_id.get(candidate.foundId)
+            if baseline is None or candidate.score >= baseline.score:
+                merged_by_id[candidate.foundId] = candidate
+        merged = sorted(merged_by_id.values(), key=lambda c: c.score, reverse=True)
+        return merged[:5], "hybrid"
     except Exception:
         return heuristic_match(case, found), "heuristic"

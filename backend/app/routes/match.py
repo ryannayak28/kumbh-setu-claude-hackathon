@@ -14,6 +14,8 @@ def match(case_id: str) -> dict:
     if not case:
         raise HTTPException(404, "Case not found")
     candidates, engine = claude_setu.match(case, s.unmatched_found())
+    if candidates and case.status not in ("Reunited", "Transferred"):
+        case.status = "Matched"
     return {
         "caseId": case_id,
         "engine": engine,

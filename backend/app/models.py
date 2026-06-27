@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 AgeBand = Literal["0-12", "13-17", "18-40", "41-60", "61-70", "71-80", "80+"]
 Status = Literal[
@@ -119,7 +119,11 @@ class MatchCandidate(BaseModel):
 class IntakeRequest(BaseModel):
     """Free-text-first intake. Most fields optional — Claude/heuristics fill gaps."""
 
-    rawText: Optional[str] = None  # "lost my father, ~75, speaks Maithili, near Ramkund"
+    rawText: Optional[str] = Field(
+        default=None,
+        max_length=2000,
+        description="Free-text report in any language or transliteration.",
+    )
     channel: Channel = "web"
     name: Optional[str] = None
     mobile: Optional[str] = None
@@ -128,7 +132,15 @@ class IntakeRequest(BaseModel):
     language: Optional[str] = None
     lastSeenLocation: Optional[str] = None
     reportingCenter: Optional[str] = None
-    consent: bool = True
+    consent: bool = False
+
+    @field_validator("rawText", "name", "mobile", "language", "lastSeenLocation", "reportingCenter")
+    @classmethod
+    def _strip_optional_text(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped or None
 
 
 class IntakeResponse(BaseModel):

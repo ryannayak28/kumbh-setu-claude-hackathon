@@ -40,7 +40,9 @@ interface Props {
   flyTo?: [number, number] | null
   bridge?: Bridge | null
   livePin?: [number, number] | null
+  selectedZone?: string | null
   onSelectCase?: (c: Case) => void
+  onSelectZone?: (zone: string) => void
 }
 
 /** Heavy CCTV layer (~4,000 points) drawn imperatively on a canvas renderer —
@@ -120,7 +122,9 @@ export default function SetuMap({
   flyTo,
   bridge,
   livePin,
+  selectedZone,
   onSelectCase,
+  onSelectZone,
 }: Props) {
   return (
     <MapContainer
@@ -142,8 +146,16 @@ export default function SetuMap({
             <Polygon
               key={z.name}
               positions={z.polygon}
-              pathOptions={{ color: COLORS.line, weight: 1, fillColor: COLORS.teal, fillOpacity: 0.04 }}
-            />
+              pathOptions={{
+                color: selectedZone === z.name ? COLORS.teal : COLORS.line,
+                weight: selectedZone === z.name ? 2 : 1,
+                fillColor: COLORS.teal,
+                fillOpacity: selectedZone === z.name ? 0.12 : 0.04,
+              }}
+              eventHandlers={{ click: () => onSelectZone?.(z.name) }}
+            >
+              <Tooltip>{z.name} · click to filter cases</Tooltip>
+            </Polygon>
           ))}
 
       <CctvLayer geo={geo} visible={layers.cctv} />
